@@ -7,8 +7,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{B8C6408E-96DA-4609-80E1-CE67334E69AE}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>OCR_Helper</RootNamespace>
-    <AssemblyName>OCR-Helper</AssemblyName>
+    <RootNamespace>PDF_Helper</RootNamespace>
+    <AssemblyName>PDF-Helper</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -55,9 +55,28 @@
     <ErrorReport>prompt</ErrorReport>
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
+  <Target Name="AfterBuild">
+    <RemoveDir Directories="$(OutputPath)\arm" />
+    <RemoveDir Directories="$(OutputPath)\arm64" />
+    <RemoveDir Directories="$(OutputPath)\bionic-arm64" />
+    <RemoveDir Directories="$(OutputPath)\loongarch64" />
+    <RemoveDir Directories="$(OutputPath)\musl-arm" />
+    <RemoveDir Directories="$(OutputPath)\musl-arm64" />
+    <RemoveDir Directories="$(OutputPath)\musl-loongarch64" />
+    <RemoveDir Directories="$(OutputPath)\musl-riscv64" />
+    <RemoveDir Directories="$(OutputPath)\musl-x86" />
+    <RemoveDir Directories="$(OutputPath)\riscv64" />
+    <RemoveDir Directories="$(OutputPath)\x86" />
+  </Target>
   <ItemGroup>
     <Reference Include="OpenCvSharp, Version=4.0.0.0, Culture=neutral, PublicKeyToken=6adad1e807fea099, processorArchitecture=MSIL">
       <HintPath>..\packages\OpenCvSharp4.4.13.0.20260627\lib\netstandard2.0\OpenCvSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="PDFtoImage, Version=5.4.0.0, Culture=neutral, PublicKeyToken=77810836c31722d8, processorArchitecture=MSIL">
+      <HintPath>..\packages\PDFtoImage.5.4.0\lib\net471\PDFtoImage.dll</HintPath>
+    </Reference>
+    <Reference Include="SkiaSharp, Version=4.150.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <HintPath>..\packages\SkiaSharp.4.150.1\lib\net48\SkiaSharp.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.5.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
@@ -101,6 +120,18 @@
     <Error Condition="!Exists('..\packages\Tesseract.5.2.0\build\Tesseract.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Tesseract.5.2.0\build\Tesseract.targets'))" />
     <Error Condition="!Exists('..\packages\OpenCvSharp4.runtime.win.4.13.0.20260627\build\netstandard\OpenCvSharp4.runtime.win.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\OpenCvSharp4.runtime.win.4.13.0.20260627\build\netstandard\OpenCvSharp4.runtime.win.props'))" />
     <Error Condition="!Exists('..\packages\OpenCvSharp4.runtime.win.4.13.0.20260627\build\netstandard\OpenCvSharp4.runtime.win.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\OpenCvSharp4.runtime.win.4.13.0.20260627\build\netstandard\OpenCvSharp4.runtime.win.targets'))" />
+    <Error Condition="!Exists('..\packages\bblanchon.PDFium.Linux.152.0.7961\build\net461\bblanchon.PDFium.Linux.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\bblanchon.PDFium.Linux.152.0.7961\build\net461\bblanchon.PDFium.Linux.targets'))" />
+    <Error Condition="!Exists('..\packages\bblanchon.PDFium.macOS.152.0.7961\build\net461\bblanchon.PDFium.macOS.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\bblanchon.PDFium.macOS.152.0.7961\build\net461\bblanchon.PDFium.macOS.targets'))" />
+    <Error Condition="!Exists('..\packages\bblanchon.PDFium.Win32.152.0.7961\build\net461\bblanchon.PDFium.Win32.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\bblanchon.PDFium.Win32.152.0.7961\build\net461\bblanchon.PDFium.Win32.targets'))" />
+    <Error Condition="!Exists('..\packages\SkiaSharp.NativeAssets.Linux.NoDependencies.4.150.1\build\net48\SkiaSharp.NativeAssets.Linux.NoDependencies.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SkiaSharp.NativeAssets.Linux.NoDependencies.4.150.1\build\net48\SkiaSharp.NativeAssets.Linux.NoDependencies.targets'))" />
+    <Error Condition="!Exists('..\packages\SkiaSharp.NativeAssets.macOS.4.150.1\build\net48\SkiaSharp.NativeAssets.macOS.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SkiaSharp.NativeAssets.macOS.4.150.1\build\net48\SkiaSharp.NativeAssets.macOS.targets'))" />
+    <Error Condition="!Exists('..\packages\SkiaSharp.NativeAssets.Win32.4.150.1\build\net48\SkiaSharp.NativeAssets.Win32.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SkiaSharp.NativeAssets.Win32.4.150.1\build\net48\SkiaSharp.NativeAssets.Win32.targets'))" />
   </Target>
   <Import Project="..\packages\OpenCvSharp4.runtime.win.4.13.0.20260627\build\netstandard\OpenCvSharp4.runtime.win.targets" Condition="Exists('..\packages\OpenCvSharp4.runtime.win.4.13.0.20260627\build\netstandard\OpenCvSharp4.runtime.win.targets')" />
+  <Import Project="..\packages\bblanchon.PDFium.Linux.152.0.7961\build\net461\bblanchon.PDFium.Linux.targets" Condition="Exists('..\packages\bblanchon.PDFium.Linux.152.0.7961\build\net461\bblanchon.PDFium.Linux.targets')" />
+  <Import Project="..\packages\bblanchon.PDFium.macOS.152.0.7961\build\net461\bblanchon.PDFium.macOS.targets" Condition="Exists('..\packages\bblanchon.PDFium.macOS.152.0.7961\build\net461\bblanchon.PDFium.macOS.targets')" />
+  <Import Project="..\packages\bblanchon.PDFium.Win32.152.0.7961\build\net461\bblanchon.PDFium.Win32.targets" Condition="Exists('..\packages\bblanchon.PDFium.Win32.152.0.7961\build\net461\bblanchon.PDFium.Win32.targets')" />
+  <Import Project="..\packages\SkiaSharp.NativeAssets.Linux.NoDependencies.4.150.1\build\net48\SkiaSharp.NativeAssets.Linux.NoDependencies.targets" Condition="Exists('..\packages\SkiaSharp.NativeAssets.Linux.NoDependencies.4.150.1\build\net48\SkiaSharp.NativeAssets.Linux.NoDependencies.targets')" />
+  <Import Project="..\packages\SkiaSharp.NativeAssets.macOS.4.150.1\build\net48\SkiaSharp.NativeAssets.macOS.targets" Condition="Exists('..\packages\SkiaSharp.NativeAssets.macOS.4.150.1\build\net48\SkiaSharp.NativeAssets.macOS.targets')" />
+  <Import Project="..\packages\SkiaSharp.NativeAssets.Win32.4.150.1\build\net48\SkiaSharp.NativeAssets.Win32.targets" Condition="Exists('..\packages\SkiaSharp.NativeAssets.Win32.4.150.1\build\net48\SkiaSharp.NativeAssets.Win32.targets')" />
 </Project>
