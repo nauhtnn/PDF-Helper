@@ -52,13 +52,15 @@ namespace PDF_Helper
 
         static void Main(string[] args)
         {
-            string pdfPath = "D:\\Thuan\\PDF-Helper\\sample_vietnamese.pdf";
-            string pngPath = "D:\\Thuan\\PDF-Helper\\sample_vietnamese.png";
+            string pdfPath = "E:\\Dev\\PDF-Helper\\sample_vietnamese.pdf";
 #if DEBUG
-            string outputDir = "D:\\Thuan\\PDF-Helper\\output_images";
+            string pngPath = "E:\\Dev\\PDF-Helper\\sample_vietnamese.png";
+            string outputDir = "E:\\Dev\\PDF-Helper\\output_images";
             Debug_SavePdfToImages(pdfPath, outputDir);
-#endif
+            OCR(pngPath);
+#else
             OCR(pdfPath);
+#endif
         }
         static void OCR(string filePath)
         {
@@ -86,7 +88,12 @@ namespace PDF_Helper
             // Initialize Tesseract with Vietnamese traineddata
             using (var engine = new TesseractEngine(@"./tessdata", "vie", EngineMode.Default))
             {
+#if DEBUG
                 using (var pix = Pix.LoadFromFile("processed.png"))
+#else
+
+                using (var pix = Pix.LoadFromMemory(image.ToBytes(".png")))
+#endif
                 {
                     using (var page = engine.Process(pix))
                     {

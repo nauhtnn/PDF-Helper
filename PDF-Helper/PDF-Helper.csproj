@@ -55,19 +55,6 @@
     <ErrorReport>prompt</ErrorReport>
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
-  <Target Name="AfterBuild">
-    <RemoveDir Directories="$(OutputPath)\arm" />
-    <RemoveDir Directories="$(OutputPath)\arm64" />
-    <RemoveDir Directories="$(OutputPath)\bionic-arm64" />
-    <RemoveDir Directories="$(OutputPath)\loongarch64" />
-    <RemoveDir Directories="$(OutputPath)\musl-arm" />
-    <RemoveDir Directories="$(OutputPath)\musl-arm64" />
-    <RemoveDir Directories="$(OutputPath)\musl-loongarch64" />
-    <RemoveDir Directories="$(OutputPath)\musl-riscv64" />
-    <RemoveDir Directories="$(OutputPath)\musl-x86" />
-    <RemoveDir Directories="$(OutputPath)\riscv64" />
-    <RemoveDir Directories="$(OutputPath)\x86" />
-  </Target>
   <ItemGroup>
     <Reference Include="OpenCvSharp, Version=4.0.0.0, Culture=neutral, PublicKeyToken=6adad1e807fea099, processorArchitecture=MSIL">
       <HintPath>..\packages\OpenCvSharp4.4.13.0.20260627\lib\netstandard2.0\OpenCvSharp.dll</HintPath>
@@ -134,4 +121,21 @@
   <Import Project="..\packages\SkiaSharp.NativeAssets.Linux.NoDependencies.4.150.1\build\net48\SkiaSharp.NativeAssets.Linux.NoDependencies.targets" Condition="Exists('..\packages\SkiaSharp.NativeAssets.Linux.NoDependencies.4.150.1\build\net48\SkiaSharp.NativeAssets.Linux.NoDependencies.targets')" />
   <Import Project="..\packages\SkiaSharp.NativeAssets.macOS.4.150.1\build\net48\SkiaSharp.NativeAssets.macOS.targets" Condition="Exists('..\packages\SkiaSharp.NativeAssets.macOS.4.150.1\build\net48\SkiaSharp.NativeAssets.macOS.targets')" />
   <Import Project="..\packages\SkiaSharp.NativeAssets.Win32.4.150.1\build\net48\SkiaSharp.NativeAssets.Win32.targets" Condition="Exists('..\packages\SkiaSharp.NativeAssets.Win32.4.150.1\build\net48\SkiaSharp.NativeAssets.Win32.targets')" />
+  <Target Name="AfterBuild">
+    <Exec Command="rmdir /s /q &quot;$(OutputPath)\arm&quot;" />
+    <Exec Command="rmdir /s /q &quot;$(OutputPath)\arm64&quot;" />
+    <Exec Command="rmdir /s /q &quot;$(OutputPath)\bionic-arm64&quot;" />
+    <Exec Command="rmdir /s /q &quot;$(OutputPath)\bionic-x64&quot;" />
+    <Exec Command="rmdir /s /q &quot;$(OutputPath)\loongarch64&quot;" />
+    <Exec Command="rmdir /s /q &quot;$(OutputPath)\musl-arm&quot;" />
+    <Exec Command="rmdir /s /q &quot;$(OutputPath)\musl-arm64&quot;" />
+    <Exec Command="rmdir /s /q &quot;$(OutputPath)\musl-loongarch64&quot;" />
+    <Exec Command="rmdir /s /q &quot;$(OutputPath)\musl-riscv64&quot;" />
+    <Exec Command="rmdir /s /q &quot;$(OutputPath)\musl-x64&quot;" />
+    <Exec Command="rmdir /s /q &quot;$(OutputPath)\musl-x86&quot;" />
+    <Exec Command="rmdir /s /q &quot;$(OutputPath)\riscv64&quot;" />
+    <Exec Command="rmdir /s /q &quot;$(OutputPath)\x86&quot;" />
+    <Exec Command="del /s /q &quot;$(OutputPath)\*.so&quot;" />
+    <Exec Command="del /s /q &quot;$(OutputPath)\*.dylib&quot;" />
+  </Target>
 </Project>
