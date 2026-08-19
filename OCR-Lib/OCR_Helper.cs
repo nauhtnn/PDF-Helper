@@ -18,10 +18,11 @@ namespace OCR_Lib
             else if (Directory.Exists(path))
             {
                 OCR_Folder(path, recursive: true);
+                StatusMessage.GetInstance().AddMessage("Hoàn thành đọc thư mục " + path + ".");
             }
             else
             {
-                Console.WriteLine("Invalid path. Please provide a valid PDF file or folder path.");
+                StatusMessage.GetInstance().AddMessage("Không xử lý được. Vui lòng cung cấp đường dẫn tới file PDF hoặc thư mục.");
             }
         }
 
@@ -51,7 +52,7 @@ namespace OCR_Lib
                         using (var page = engine.Process(pix))
                         {
                             resultText.AppendLine(page.GetText());
-                            Console.WriteLine("Recognized page {1} of file {0}.:", filePath, ++pageIndex);
+                            StatusMessage.GetInstance().AddMessage($"Nhận diện ký tự trang {++pageIndex} của file {filePath}.");
                         }
                     }
                 }
