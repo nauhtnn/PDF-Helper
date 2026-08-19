@@ -7,10 +7,8 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using static System.Net.Mime.MediaTypeNames;
 
-namespace PDF_Helper
+namespace OCR_Lib
 {
     internal class PNG_Converter
     {
@@ -42,12 +40,6 @@ namespace PDF_Helper
 
         public static List<byte[]> LoadFileForOCR(string filePath)
         {
-            if(System.IO.File.Exists(filePath) == false)
-            {
-                Console.WriteLine("File not found: {0}", filePath);
-                return new List<byte[]>();  
-            }
-
             List<Mat> images;
             if(filePath.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
             {

@@ -1,9 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.14.36414.22
+# Visual Studio Version 18
+VisualStudioVersion = 18.9.12112.369
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PDF-Helper", "PDF-Helper\PDF-Helper.csproj", "{B8C6408E-96DA-4609-80E1-CE67334E69AE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PDF-Helper-CLI", "PDF-Helper-CLI\PDF-Helper-CLI.csproj", "{B8C6408E-96DA-4609-80E1-CE67334E69AE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OCR-Lib", "OCR-Lib\OCR-Lib.csproj", "{4C5BDBC9-0EFC-4A3E-A6AC-CEF961CB6B57}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PDF-Helper", "PDF-Helper\PDF-Helper.csproj", "{43782117-024F-444F-AF87-0E167276D7DA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +25,22 @@ Global
 		{B8C6408E-96DA-4609-80E1-CE67334E69AE}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B8C6408E-96DA-4609-80E1-CE67334E69AE}.Release|x64.ActiveCfg = Release|x64
 		{B8C6408E-96DA-4609-80E1-CE67334E69AE}.Release|x64.Build.0 = Release|x64
+		{4C5BDBC9-0EFC-4A3E-A6AC-CEF961CB6B57}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4C5BDBC9-0EFC-4A3E-A6AC-CEF961CB6B57}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4C5BDBC9-0EFC-4A3E-A6AC-CEF961CB6B57}.Debug|x64.ActiveCfg = Debug|x64
+		{4C5BDBC9-0EFC-4A3E-A6AC-CEF961CB6B57}.Debug|x64.Build.0 = Debug|x64
+		{4C5BDBC9-0EFC-4A3E-A6AC-CEF961CB6B57}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4C5BDBC9-0EFC-4A3E-A6AC-CEF961CB6B57}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4C5BDBC9-0EFC-4A3E-A6AC-CEF961CB6B57}.Release|x64.ActiveCfg = Release|x64
+		{4C5BDBC9-0EFC-4A3E-A6AC-CEF961CB6B57}.Release|x64.Build.0 = Release|x64
+		{43782117-024F-444F-AF87-0E167276D7DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{43782117-024F-444F-AF87-0E167276D7DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{43782117-024F-444F-AF87-0E167276D7DA}.Debug|x64.ActiveCfg = Debug|x64
+		{43782117-024F-444F-AF87-0E167276D7DA}.Debug|x64.Build.0 = Debug|x64
+		{43782117-024F-444F-AF87-0E167276D7DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{43782117-024F-444F-AF87-0E167276D7DA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{43782117-024F-444F-AF87-0E167276D7DA}.Release|x64.ActiveCfg = Release|x64
+		{43782117-024F-444F-AF87-0E167276D7DA}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,4 +1,8 @@
 .vs/
+OCR-Lib/bin/
+OCR-Lib/obj/
 PDF-Helper/bin/
 PDF-Helper/obj/
+PDF-Helper-CLI/bin/
+PDF-Helper-CLI/obj/
 packages/
