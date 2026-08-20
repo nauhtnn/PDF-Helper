@@ -100,7 +100,7 @@ namespace PDF_Helper
         private void PathTxb_LostFocus(object sender, RoutedEventArgs e)
         {
             var textBox = sender as System.Windows.Controls.TextBox;
-            if (textBox.Text == string.Empty)
+            if (textBox.Text == string.Empty || textBox.Text.Trim() == string.Empty)
             {
                 if (sender == FolderPathTxb)
                 {
@@ -115,26 +115,31 @@ namespace PDF_Helper
 
         private void OCR_Click(object sender, RoutedEventArgs e)
         {
-            if(!string.IsNullOrEmpty(FolderPathTxb.Text) && FolderPathTxb.Text != NO_FOLDER_PATH)
+            System.Threading.Thread folder_thread = null;
+            System.Threading.Thread file_thread = null;
+
+            if (!string.IsNullOrEmpty(FolderPathTxb.Text) && FolderPathTxb.Text != NO_FOLDER_PATH)
             {
                 string folderPath = FolderPathTxb.Text;
-                StatusMessage.GetInstance().AddMessage("Bắt đầu đọc files trong thư mục: " + folderPath);
-                System.Threading.Thread thread = new System.Threading.Thread(new System.Threading.ThreadStart(() => OCR_Helper.OCR(folderPath)));
-                thread.Start();
+                folder_thread = new System.Threading.Thread(new System.Threading.ThreadStart(() => OCR_Helper.OCR_Folder(folderPath)));
+                folder_thread.Start();
             }
             if (!string.IsNullOrEmpty(FilePathTxb.Text) && FilePathTxb.Text != NO_FILE_PATH)
             {
-                if(!System.IO.File.Exists(FilePathTxb.Text))
+                string filePath = FilePathTxb.Text;
+                file_thread = new System.Threading.Thread(new System.Threading.ThreadStart(() => OCR_Helper.OCR_File(filePath)));
+                file_thread.Start();
+            }
+
+            var finishedMessageThread = new System.Threading.Thread(new System.Threading.ThreadStart(() => {
+                while((folder_thread != null && folder_thread.IsAlive) && (file_thread != null && file_thread.IsAlive))
                 {
-                    System.Windows.MessageBox.Show(FilePathTxb.Text + " không phải là đường dẫn của một file.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return;
+                    System.Threading.Thread.Sleep(1000);
                 }
 
-                string filePath = FilePathTxb.Text;
-                StatusMessage.GetInstance().AddMessage("Bắt đầu đọc file: " + filePath);
-                System.Threading.Thread thread = new System.Threading.Thread(new System.Threading.ThreadStart(() => OCR_Helper.OCR(filePath)));
-                thread.Start();
-            }
+                StatusMessage.GetInstance().AddMessage("Hoàn thành lệnh.");
+            }));
+            finishedMessageThread.Start();
         }
     }
 }
