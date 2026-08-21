@@ -27,7 +27,7 @@ namespace OCR_Lib
 
         public static void OCR_Folder(string folderPath, bool recursive = false)
         {
-            if (!File.Exists(folderPath))
+            if (!Directory.Exists(folderPath))
             {
                 StatusMessage.GetInstance().AddMessage(folderPath + " không phải là đường dẫn của một thư mục !");
                 return;

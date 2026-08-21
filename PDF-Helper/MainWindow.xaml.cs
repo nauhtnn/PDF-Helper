@@ -118,6 +118,8 @@ namespace PDF_Helper
             System.Threading.Thread folder_thread = null;
             System.Threading.Thread file_thread = null;
 
+            StatusMessage.GetInstance().AddMessage("Nhận lệnh.");
+
             if (!string.IsNullOrEmpty(FolderPathTxb.Text) && FolderPathTxb.Text != NO_FOLDER_PATH)
             {
                 string folderPath = FolderPathTxb.Text;
@@ -132,7 +134,7 @@ namespace PDF_Helper
             }
 
             var finishedMessageThread = new System.Threading.Thread(new System.Threading.ThreadStart(() => {
-                while((folder_thread != null && folder_thread.IsAlive) && (file_thread != null && file_thread.IsAlive))
+                while((folder_thread != null && folder_thread.IsAlive) || (file_thread != null && file_thread.IsAlive))
                 {
                     System.Threading.Thread.Sleep(1000);
                 }
