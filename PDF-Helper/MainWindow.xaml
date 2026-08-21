@@ -8,29 +8,56 @@
         Title="PDF-Helper" Height="600" Width="800"
         Loaded="Window_Loaded" Unloaded="Window_Unloaded">
     <StackPanel>
-        <StackPanel Orientation="Horizontal" Margin="20,30,0,0" >
-            <Button Click="FolderSelect_Click" Content="Chọn thư mục" Height="30" Margin="0,0,0,0" Width="140" FontSize="14" Background="OrangeRed" Foreground="White"/>
+        <StackPanel Orientation="Horizontal" Margin="20,20,0,0" >
+            <Button x:Name="FolderSelect_Btn"
+                    Click="FolderSelect_Click"
+                    Content="Chọn thư mục"
+                    Height="30" Margin="0,0,0,0" Width="140" FontSize="14"
+                    Background="OrangeRed" Foreground="White" 
+                    IsEnabledChanged="Btn_IsEnabledChanged" />
             <TextBox x:Name="FolderPathTxb"
                      Text="{x:Static local:MainWindow.NO_FOLDER_PATH}" Height="30" Margin="20,0,0,0" Width="600" FontSize="14"
                      GotFocus="PathTxb_GotFocus"
                      LostFocus="PathTxb_LostFocus"/>
         </StackPanel>
-        <StackPanel Orientation="Horizontal" Margin="20,30,0,0" >
-            <Button Click="FileSelect_Click" Content="Chọn file" Height="30" Margin="0,0,0,0" Width="140" FontSize="14" Background="Blue" Foreground="White" HorizontalAlignment="Left"/>
-            <TextBox x:Name="FilePathTxb"
-                 Text="{x:Static local:MainWindow.NO_FILE_PATH}" Height="30" Margin="20,0,0,0" Width="600" FontSize="14"
-                 GotFocus="PathTxb_GotFocus"
-                 LostFocus="PathTxb_LostFocus"/>
+        <StackPanel Orientation="Horizontal" Margin="20,10,0,0" >
+            <TextBlock Height="20" Margin="70,0,0,0" Text="Bao gồm thư mục con:" FontSize="14"/>
+            <CheckBox x:Name="IncludeSubfoldersCkb" Margin="5,0,0,0" VerticalAlignment="Center" />
         </StackPanel>
-        <Button Click="OCR_Click" Content="Bắt đầu đọc ký tự" Height="30" Margin="20,30,0,0" Width="140" FontSize="14" Background="ForestGreen" Foreground="White" HorizontalAlignment="Left"/>
-        <TextBlock HorizontalAlignment="Left" Height="30" Margin="40,20,0,0" TextWrapping="Wrap" Text="Trạng thái :" FontSize="14"/>
+        <StackPanel Orientation="Horizontal" Margin="20,20,0,0" >
+            <Button x:Name="FileSelect_Btn"
+                    Click="FileSelect_Click"
+                    Content="Chọn file"
+                    Height="30" Margin="0,0,0,0" Width="140" FontSize="14"
+                    Background="Blue" Foreground="White" HorizontalAlignment="Left"
+                    IsEnabledChanged="Btn_IsEnabledChanged" />
+            <TextBox x:Name="FilePathTxb"
+                     Text="{x:Static local:MainWindow.NO_FILE_PATH}" Height="30" Margin="20,0,0,0" Width="600" FontSize="14"
+                     GotFocus="PathTxb_GotFocus"
+                     LostFocus="PathTxb_LostFocus"/>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Margin="20,30,0,0" >
+            <Button x:Name="StartOCR_Btn"
+                    Click="OCR_Click"
+                    Content="Bắt đầu đọc ký tự"
+                    Height="30" Width="140" FontSize="14"
+                    Background="ForestGreen" Foreground="White"
+                    IsEnabledChanged="Btn_IsEnabledChanged" />
+            <Button x:Name="StopOCR_Btn"
+                    Click="Stop_Click"
+                    Content="Dừng đọc ký tự"
+                    Height="30" Margin="40,0,0,0" Width="140" FontSize="14"
+                    Background="DarkRed" Foreground="White" HorizontalAlignment="Left"
+                    IsEnabledChanged="Btn_IsEnabledChanged" />
+        </StackPanel>
+        <TextBlock HorizontalAlignment="Left" Height="20" Margin="40,20,0,0" TextWrapping="Wrap" Text="Trạng thái :" FontSize="14"/>
         <Border BorderBrush="Gray"
             BorderThickness="1"
             CornerRadius="4"
             Padding="5"
             Width="720"
             Height="300"
-            Margin="40,00,0,0"
+            Margin="40,0,0,0"
             HorizontalAlignment="Left">
             <ScrollViewer x:Name="scrollViewer"
                   VerticalScrollBarVisibility="Auto"
@@ -39,5 +66,10 @@
                    TextWrapping="Wrap"/>
             </ScrollViewer>
         </Border>
+        <StackPanel Orientation="Horizontal" Margin="20,5,0,0" >
+            <TextBlock Height="20" Margin="20,0,0,0" Text="Tự động cuộn trạng thái:" FontSize="14" />
+            <CheckBox x:Name="AutoScrollCkb" Margin="5,0,0,0" VerticalAlignment="Center" IsChecked="True" Checked="AutoScrollCkb_Checked"/>
+            <Button Click="ClearMessage_Click" Content="Xóa trạng thái" Height="30" Margin="50,0,0,0" Width="100" FontSize="14" HorizontalAlignment="Left"/>
+        </StackPanel>
     </StackPanel>
 </Window>

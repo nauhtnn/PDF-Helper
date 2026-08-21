@@ -61,22 +61,31 @@ namespace PDF_Helper
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            ToggleOCR_Buttons(startOCR: false);
+
             _timer = new System.Threading.Timer((state) =>
             {
                 string messages = StatusMessage.GetInstance().ConsumeMessage();
                 if (!string.IsNullOrEmpty(messages))
                 {
-                    if(!Dispatcher.HasShutdownStarted && !Dispatcher.HasShutdownFinished)
+                    if (!Dispatcher.HasShutdownStarted && !Dispatcher.HasShutdownFinished)
                     {
                         Dispatcher.Invoke(() =>
                         {
-                            statusLabel.Text += messages;
+                            if (AutoScrollCkb.IsChecked == true)
+                            {
+                                statusLabel.Text += messages;
 
-                            // Force layout update before scrolling
-                            scrollViewer.UpdateLayout();
+                                scrollViewer.ScrollToEnd();
+                            }
+                            else
+                            {
+                                double currentOffset = scrollViewer.VerticalOffset;
 
-                            // Scroll to the end
-                            scrollViewer.ScrollToEnd();
+                                statusLabel.Text += messages;
+                                scrollViewer.UpdateLayout();
+                                scrollViewer.ScrollToVerticalOffset(currentOffset);
+                            }
                         });
                     }
                 }
@@ -113,6 +122,36 @@ namespace PDF_Helper
             }
         }
 
+        private void ToggleOCR_Buttons(bool startOCR)
+        {
+            if (startOCR)
+            {
+                StopOCR_Btn.IsEnabled = true;
+
+                StartOCR_Btn.IsEnabled = false;
+
+                FolderSelect_Btn.IsEnabled = false;
+                FolderPathTxb.IsEnabled = false;
+                IncludeSubfoldersCkb.IsEnabled = false;
+                FileSelect_Btn.IsEnabled = false;
+                FilePathTxb.IsEnabled = false;
+
+                OCR_Helper.StopRequested = false;
+            }
+            else
+            {
+                StopOCR_Btn.IsEnabled = false;
+
+                StartOCR_Btn.IsEnabled = true;
+
+                FolderSelect_Btn.IsEnabled = true;
+                FolderPathTxb.IsEnabled = true;
+                IncludeSubfoldersCkb.IsEnabled = true;
+                FileSelect_Btn.IsEnabled = true;
+                FilePathTxb.IsEnabled = true;
+            }
+        }
+
         private void OCR_Click(object sender, RoutedEventArgs e)
         {
             System.Threading.Thread folder_thread = null;
@@ -120,10 +159,13 @@ namespace PDF_Helper
 
             StatusMessage.GetInstance().AddMessage("Nhận lệnh.");
 
+            ToggleOCR_Buttons(startOCR: true);
+
             if (!string.IsNullOrEmpty(FolderPathTxb.Text) && FolderPathTxb.Text != NO_FOLDER_PATH)
             {
                 string folderPath = FolderPathTxb.Text;
-                folder_thread = new System.Threading.Thread(new System.Threading.ThreadStart(() => OCR_Helper.OCR_Folder(folderPath)));
+                bool includeSubfolders = IncludeSubfoldersCkb.IsChecked ?? false;
+                folder_thread = new System.Threading.Thread(new System.Threading.ThreadStart(() => OCR_Helper.OCR_Folder(folderPath, includeSubfolders)));
                 folder_thread.Start();
             }
             if (!string.IsNullOrEmpty(FilePathTxb.Text) && FilePathTxb.Text != NO_FILE_PATH)
@@ -140,8 +182,44 @@ namespace PDF_Helper
                 }
 
                 StatusMessage.GetInstance().AddMessage("Hoàn thành lệnh.");
+
+                Dispatcher.Invoke(() =>
+                {
+                    ToggleOCR_Buttons(startOCR: false);
+                });
             }));
             finishedMessageThread.Start();
+        }
+
+        private void Stop_Click(object sender, RoutedEventArgs e)
+        {
+            StatusMessage.GetInstance().AddMessage("Nhận lệnh dừng.");
+            OCR_Helper.StopRequested = true;
+        }
+
+        private void ClearMessage_Click(object sender, RoutedEventArgs e)
+        {
+            statusLabel.Text = string.Empty;
+        }
+
+        private void Btn_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if(e.NewValue is bool)
+            {
+                if ((bool)e.NewValue)
+                {
+                    (sender as System.Windows.Controls.Button).Foreground = System.Windows.Media.Brushes.White;
+                }
+                else
+                {
+                    (sender as System.Windows.Controls.Button).Foreground = System.Windows.Media.Brushes.Black;
+                }
+            }
+        }
+
+        private void AutoScrollCkb_Checked(object sender, RoutedEventArgs e)
+        {
+            scrollViewer.ScrollToEnd();
         }
     }
 }

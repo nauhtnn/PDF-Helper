@@ -9,6 +9,8 @@ namespace OCR_Lib
 {
     public class OCR_Helper
     {
+        public static bool StopRequested { get; set; } = false;
+
         public static void OCR(string path)
         {
             if (File.Exists(path) && Path.GetExtension(path).Equals(".pdf", StringComparison.OrdinalIgnoreCase))
@@ -38,23 +40,47 @@ namespace OCR_Lib
 
         static void _OCR_Folder(string folderPath, bool recursive = false)
         {
-            var pdfFiles = Directory.GetFiles(folderPath, "*.pdf",
-                recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
-
-            if(pdfFiles.Count() > 0)
+            if (StopRequested)
             {
-                StatusMessage.GetInstance().AddMessage($"Bắt đầu đọc thư mục: {folderPath}.");
+                return;
             }
 
-            foreach (var pdfFile in pdfFiles)
+            string normalizedFolderPath;
+            if (!folderPath.EndsWith(Path.DirectorySeparatorChar.ToString()))
             {
-                _OCR_File(pdfFile);
+                normalizedFolderPath = folderPath + Path.DirectorySeparatorChar;
+            }
+            else
+            {
+                normalizedFolderPath = folderPath;
             }
 
-            if (pdfFiles.Count() > 0)
+            StatusMessage.GetInstance().AddMessage($"Bắt đầu đọc thư mục: {normalizedFolderPath}.");
+
+            string[] pdfFiles = null;
+            try
             {
-                StatusMessage.GetInstance().AddMessage($"Hoàn thành đọc thư mục: {folderPath}.");
+                pdfFiles = Directory.GetFiles(normalizedFolderPath, "*.pdf",
+                   recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
             }
+            catch (UnauthorizedAccessException ex)
+            {
+                StatusMessage.GetInstance().AddMessage("Không có quyền đọc thư mục: " + ex.Message);
+            }
+            catch (Exception ex)
+            {
+                StatusMessage.GetInstance().AddMessage("Lỗi khi đọc thư mục: " + ex.Message);
+            }
+
+            if (pdfFiles != null)
+            {
+                foreach (var pdfFile in pdfFiles)
+                {
+                    _OCR_File(pdfFile);
+                }
+            }
+
+            StatusMessage.GetInstance().AddMessage($"Hoàn thành đọc thư mục: {normalizedFolderPath}.");
         }
 
         public static void OCR_File(string filePath)
@@ -69,6 +95,11 @@ namespace OCR_Lib
 
         static void _OCR_File(string filePath)
         {
+            if (StopRequested)
+            {
+                return;
+            }
+
             StatusMessage.GetInstance().AddMessage($"Bắt đầu đọc file: {filePath}.");
 
             var images = PNG_Converter.LoadFileForOCR(filePath);
@@ -76,6 +107,11 @@ namespace OCR_Lib
             int pageIndex = 0;
             foreach (var image in images)
             {
+                if (StopRequested)
+                {
+                    return;
+                }
+
                 // Initialize Tesseract with Vietnamese traineddata
                 using (var engine = new TesseractEngine(@"./", "vie", EngineMode.Default))
                 {
