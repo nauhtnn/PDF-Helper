@@ -39,7 +39,7 @@
         <StackPanel Orientation="Horizontal" Margin="20,30,0,0" >
             <Button x:Name="StartOCR_Btn"
                     Click="OCR_Click"
-                    Content="Bắt đầu đọc ký tự"
+                    Content="Đọc ký tự"
                     Height="30" Width="140" FontSize="14"
                     Background="ForestGreen" Foreground="White"
                     IsEnabledChanged="Btn_IsEnabledChanged" />
@@ -48,6 +48,12 @@
                     Content="Dừng đọc ký tự"
                     Height="30" Margin="40,0,0,0" Width="140" FontSize="14"
                     Background="DarkRed" Foreground="White" HorizontalAlignment="Left"
+                    IsEnabledChanged="Btn_IsEnabledChanged" />
+            <Button x:Name="StartNER_Btn"
+                    Click="StartNER_Btn_Click"
+                    Content="Nhận dạng thông tin"
+                    Height="30" Width="140" Margin="200,0,0,0" FontSize="14"
+                    Background="DarkMagenta" Foreground="White"
                     IsEnabledChanged="Btn_IsEnabledChanged" />
         </StackPanel>
         <TextBlock HorizontalAlignment="Left" Height="20" Margin="40,20,0,0" TextWrapping="Wrap" Text="Trạng thái :" FontSize="14"/>

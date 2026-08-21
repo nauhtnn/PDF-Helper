@@ -161,18 +161,24 @@ namespace PDF_Helper
 
             ToggleOCR_Buttons(startOCR: true);
 
-            if (!string.IsNullOrEmpty(FolderPathTxb.Text) && FolderPathTxb.Text != NO_FOLDER_PATH)
+            if (!string.IsNullOrEmpty(FolderPathTxb.Text))
             {
-                string folderPath = FolderPathTxb.Text;
-                bool includeSubfolders = IncludeSubfoldersCkb.IsChecked ?? false;
-                folder_thread = new System.Threading.Thread(new System.Threading.ThreadStart(() => OCR_Helper.OCR_Folder(folderPath, includeSubfolders)));
-                folder_thread.Start();
+                string folderPath = FolderPathTxb.Text.Trim();
+                if(folderPath != NO_FOLDER_PATH)
+                {
+                    bool includeSubfolders = IncludeSubfoldersCkb.IsChecked ?? false;
+                    folder_thread = new System.Threading.Thread(new System.Threading.ThreadStart(() => OCR_Helper.OCR_Folder(folderPath, includeSubfolders)));
+                    folder_thread.Start();
+                }
             }
-            if (!string.IsNullOrEmpty(FilePathTxb.Text) && FilePathTxb.Text != NO_FILE_PATH)
+            if (!string.IsNullOrEmpty(FilePathTxb.Text))
             {
-                string filePath = FilePathTxb.Text;
-                file_thread = new System.Threading.Thread(new System.Threading.ThreadStart(() => OCR_Helper.OCR_File(filePath)));
-                file_thread.Start();
+                string filePath = FilePathTxb.Text.Trim();
+                if(filePath != NO_FILE_PATH)
+                {
+                    file_thread = new System.Threading.Thread(new System.Threading.ThreadStart(() => OCR_Helper.OCR_File(filePath)));
+                    file_thread.Start();
+                }
             }
 
             var finishedMessageThread = new System.Threading.Thread(new System.Threading.ThreadStart(() => {
@@ -220,6 +226,11 @@ namespace PDF_Helper
         private void AutoScrollCkb_Checked(object sender, RoutedEventArgs e)
         {
             scrollViewer.ScrollToEnd();
+        }
+
+        private void StartNER_Btn_Click(object sender, RoutedEventArgs e)
+        {
+            NER_LeaveSlip.GetInstance().NER_File(FilePathTxb.Text);
         }
     }
 }

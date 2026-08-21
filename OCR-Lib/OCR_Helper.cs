@@ -152,7 +152,7 @@ namespace OCR_Lib
                         using (var page = engine.Process(pix))
                         {
                             resultText.AppendLine(page.GetText());
-                            StatusMessage.GetInstance().AddMessage($"Nhận diện ký tự trang {++pageIndex}.");
+                            StatusMessage.GetInstance().AddMessage($"Nhận dạng ký tự trang {++pageIndex}.");
                         }
                     }
                 }
