@@ -15,11 +15,11 @@ namespace OCR_Lib
         {
             if (File.Exists(path) && Path.GetExtension(path).Equals(".pdf", StringComparison.OrdinalIgnoreCase))
             {
-                _OCR_File(path);
+                OCR_File(path);
             }
             else if (Directory.Exists(path))
             {
-                _OCR_Folder(path, recursive: true);
+                OCR_Folder(path, recursive: true);
             }
             else
             {
@@ -29,21 +29,6 @@ namespace OCR_Lib
 
         public static void OCR_Folder(string folderPath, bool recursive = false)
         {
-            if (!Directory.Exists(folderPath))
-            {
-                StatusMessage.GetInstance().AddMessage(folderPath + " không phải là đường dẫn của một thư mục !");
-                return;
-            }
-
-            _OCR_Folder(folderPath, recursive);
-        }
-
-        static void _OCR_Folder(string folderPath, bool recursive = false)
-        {
-            if (StopRequested)
-            {
-                return;
-            }
 
             string normalizedFolderPath;
             if (!folderPath.EndsWith(Path.DirectorySeparatorChar.ToString()))
@@ -55,13 +40,28 @@ namespace OCR_Lib
                 normalizedFolderPath = folderPath;
             }
 
-            StatusMessage.GetInstance().AddMessage($"Bắt đầu đọc thư mục: {normalizedFolderPath}.");
+            if (!Directory.Exists(normalizedFolderPath))
+            {
+                StatusMessage.GetInstance().AddMessage(normalizedFolderPath + " không phải là đường dẫn của một thư mục !");
+                return;
+            }
+
+            _OCR_Folder(normalizedFolderPath, recursive);
+        }
+
+        static void _OCR_Folder(string folderPath, bool recursive = false)
+        {
+            if (StopRequested)
+            {
+                return;
+            }
+
+            StatusMessage.GetInstance().AddMessage($"Bắt đầu đọc thư mục: {folderPath}.");
 
             string[] pdfFiles = null;
             try
             {
-                pdfFiles = Directory.GetFiles(normalizedFolderPath, "*.pdf",
-                   recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
+                pdfFiles = Directory.GetFiles(folderPath, "*.pdf", SearchOption.TopDirectoryOnly);
             }
             catch (UnauthorizedAccessException ex)
             {
@@ -76,11 +76,43 @@ namespace OCR_Lib
             {
                 foreach (var pdfFile in pdfFiles)
                 {
+                    if (StopRequested)
+                    {
+                        return;
+                    }
                     _OCR_File(pdfFile);
                 }
             }
 
-            StatusMessage.GetInstance().AddMessage($"Hoàn thành đọc thư mục: {normalizedFolderPath}.");
+            if(recursive)
+            {
+                string[] subDirectories = null;
+                try
+                {
+                    subDirectories = Directory.GetDirectories(folderPath, "*", SearchOption.TopDirectoryOnly);
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    StatusMessage.GetInstance().AddMessage("Không có quyền đọc thư mục con: " + ex.Message);
+                }
+                catch (Exception ex)
+                {
+                    StatusMessage.GetInstance().AddMessage("Lỗi khi đọc thư mục con: " + ex.Message);
+                }
+                if (subDirectories != null)
+                {
+                    foreach (var subDir in subDirectories)
+                    {
+                        if (StopRequested)
+                        {
+                            return;
+                        }
+                        _OCR_Folder(subDir, recursive);
+                    }
+                }
+            }
+
+            StatusMessage.GetInstance().AddMessage($"Hoàn thành đọc thư mục: {folderPath}.");
         }
 
         public static void OCR_File(string filePath)
