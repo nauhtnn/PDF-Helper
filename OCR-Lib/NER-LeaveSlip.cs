@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 
 namespace OCR_Lib
 {
-    public sealed class NER_LeaveSlip : DocumentProcessor
+    public sealed partial class NER_LeaveSlip : DocumentProcessor
     {
         public Dictionary<string, LeaveSlip> LeaveSlips;
 

@@ -199,12 +199,19 @@ namespace PDF_Helper
                     System.Threading.Thread.Sleep(1000);
                 }
 
-                StatusMessage.GetInstance().AddMessage("Hoàn thành tác vụ.");
-
                 Dispatcher.Invoke(() =>
                 {
                     ToggleOCR_Buttons(startOCR: false);
+                    if(TaskCbb.SelectedItem == NERItem)
+                    {
+                        string exportFilePath = System.IO.Path.Combine(FolderPathTxb.Text.Trim(), "LeaveSlips.xlsx");
+                        NER_LeaveSlip.GetInstance().ExportToXlsx(exportFilePath);
+                        StatusMessage.GetInstance().AddMessage($"Xuất dữ liệu giấy nghỉ phép ra file Excel: {exportFilePath}");
+                    }
                 });
+
+                StatusMessage.GetInstance().AddMessage("Hoàn thành tác vụ.");
+
             }));
             finishedMessageThread.Start();
         }
