@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 
 namespace OCR_Lib
 {
-    public class NER_LeaveSlip
+    public sealed class NER_LeaveSlip : DocumentProcessor
     {
         public Dictionary<string, LeaveSlip> LeaveSlips;
 
@@ -26,9 +26,10 @@ namespace OCR_Lib
         NER_LeaveSlip()
         {
             LeaveSlips = new Dictionary<string, LeaveSlip>();
+            FileTypes = new string[] { "*.txt" };
         }
 
-        public void NER_File(string filePath)
+        protected override void ProcessFileCore(string filePath)
         {
             if (!File.Exists(filePath))
             {

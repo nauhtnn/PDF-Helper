@@ -126,40 +126,52 @@ namespace PDF_Helper
         {
             if (startOCR)
             {
-                StopOCR_Btn.IsEnabled = true;
+                StopTask_Btn.IsEnabled = true;
 
-                StartOCR_Btn.IsEnabled = false;
+                StartTask_Btn.IsEnabled = false;
 
                 FolderSelect_Btn.IsEnabled = false;
                 FolderPathTxb.IsEnabled = false;
                 IncludeSubfoldersCkb.IsEnabled = false;
                 FileSelect_Btn.IsEnabled = false;
                 FilePathTxb.IsEnabled = false;
-
-                OCR_Helper.StopRequested = false;
+                TaskCbb.IsEnabled = false;
             }
             else
             {
-                StopOCR_Btn.IsEnabled = false;
+                StopTask_Btn.IsEnabled = false;
 
-                StartOCR_Btn.IsEnabled = true;
+                StartTask_Btn.IsEnabled = true;
 
                 FolderSelect_Btn.IsEnabled = true;
                 FolderPathTxb.IsEnabled = true;
                 IncludeSubfoldersCkb.IsEnabled = true;
                 FileSelect_Btn.IsEnabled = true;
                 FilePathTxb.IsEnabled = true;
+                TaskCbb.IsEnabled = true;
             }
         }
 
-        private void OCR_Click(object sender, RoutedEventArgs e)
+        private void Start_Click(object sender, RoutedEventArgs e)
         {
             System.Threading.Thread folder_thread = null;
             System.Threading.Thread file_thread = null;
 
-            StatusMessage.GetInstance().AddMessage("Nhận lệnh.");
+            StatusMessage.GetInstance().AddMessage("Thực thi tác vụ.");
 
             ToggleOCR_Buttons(startOCR: true);
+
+            DocumentProcessor processor = null;
+            if(TaskCbb.SelectedItem == OCRItem)
+            {
+                processor = ProcessorFactory.CreateProcessor("OCR");
+            }
+            else
+            {
+                processor = ProcessorFactory.CreateProcessor("NER");
+            }
+
+            processor.StopRequested = false;
 
             if (!string.IsNullOrEmpty(FolderPathTxb.Text))
             {
@@ -167,7 +179,7 @@ namespace PDF_Helper
                 if(folderPath != NO_FOLDER_PATH)
                 {
                     bool includeSubfolders = IncludeSubfoldersCkb.IsChecked ?? false;
-                    folder_thread = new System.Threading.Thread(new System.Threading.ThreadStart(() => OCR_Helper.OCR_Folder(folderPath, includeSubfolders)));
+                    folder_thread = new System.Threading.Thread(new System.Threading.ThreadStart(() => processor.ProcessFolder(folderPath, includeSubfolders)));
                     folder_thread.Start();
                 }
             }
@@ -176,7 +188,7 @@ namespace PDF_Helper
                 string filePath = FilePathTxb.Text.Trim();
                 if(filePath != NO_FILE_PATH)
                 {
-                    file_thread = new System.Threading.Thread(new System.Threading.ThreadStart(() => OCR_Helper.OCR_File(filePath)));
+                    file_thread = new System.Threading.Thread(new System.Threading.ThreadStart(() => processor.ProcessFile(filePath)));
                     file_thread.Start();
                 }
             }
@@ -187,7 +199,7 @@ namespace PDF_Helper
                     System.Threading.Thread.Sleep(1000);
                 }
 
-                StatusMessage.GetInstance().AddMessage("Hoàn thành lệnh.");
+                StatusMessage.GetInstance().AddMessage("Hoàn thành tác vụ.");
 
                 Dispatcher.Invoke(() =>
                 {
@@ -199,8 +211,8 @@ namespace PDF_Helper
 
         private void Stop_Click(object sender, RoutedEventArgs e)
         {
-            StatusMessage.GetInstance().AddMessage("Nhận lệnh dừng.");
-            OCR_Helper.StopRequested = true;
+            StatusMessage.GetInstance().AddMessage("Ra lệnh ngắt tác vụ.");
+            OCR_Helper.GetInstance().StopRequested = true;
         }
 
         private void ClearMessage_Click(object sender, RoutedEventArgs e)
@@ -226,11 +238,6 @@ namespace PDF_Helper
         private void AutoScrollCkb_Checked(object sender, RoutedEventArgs e)
         {
             scrollViewer.ScrollToEnd();
-        }
-
-        private void StartNER_Btn_Click(object sender, RoutedEventArgs e)
-        {
-            NER_LeaveSlip.GetInstance().NER_File(FilePathTxb.Text);
         }
     }
 }

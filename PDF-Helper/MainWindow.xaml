@@ -37,23 +37,22 @@
                      LostFocus="PathTxb_LostFocus"/>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Margin="20,30,0,0" >
-            <Button x:Name="StartOCR_Btn"
-                    Click="OCR_Click"
-                    Content="Đọc ký tự"
-                    Height="30" Width="140" FontSize="14"
+            <TextBlock Height="20" Margin="0,0,0,0" Text="Chọn tác vụ:" FontSize="14"/>
+            <ComboBox x:Name="TaskCbb" Height="30" Margin="5,0,0,0" Width="220" FontSize="14">
+                <ComboBoxItem Content="Nhận dạng ký tự (OCR)" x:Name="OCRItem" IsSelected="True"/>
+                <ComboBoxItem Content="Nhận dạng giấy nghỉ phép (NER)" x:Name="NERItem" />
+            </ComboBox>
+            <Button x:Name="StartTask_Btn"
+                    Click="Start_Click"
+                    Content="Thực thi tác vụ"
+                    Height="30" Width="140" FontSize="14" Margin="50,0,0,0"
                     Background="ForestGreen" Foreground="White"
                     IsEnabledChanged="Btn_IsEnabledChanged" />
-            <Button x:Name="StopOCR_Btn"
+            <Button x:Name="StopTask_Btn"
                     Click="Stop_Click"
-                    Content="Dừng đọc ký tự"
+                    Content="Ngắt tác vụ"
                     Height="30" Margin="40,0,0,0" Width="140" FontSize="14"
                     Background="DarkRed" Foreground="White" HorizontalAlignment="Left"
-                    IsEnabledChanged="Btn_IsEnabledChanged" />
-            <Button x:Name="StartNER_Btn"
-                    Click="StartNER_Btn_Click"
-                    Content="Nhận dạng thông tin"
-                    Height="30" Width="140" Margin="200,0,0,0" FontSize="14"
-                    Background="DarkMagenta" Foreground="White"
                     IsEnabledChanged="Btn_IsEnabledChanged" />
         </StackPanel>
         <TextBlock HorizontalAlignment="Left" Height="20" Margin="40,20,0,0" TextWrapping="Wrap" Text="Trạng thái :" FontSize="14"/>
