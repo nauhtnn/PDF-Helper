@@ -87,11 +87,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DocumentProcessor.cs" />
     <Compile Include="LeaveSlip.cs" />
     <Compile Include="NER-LeaveSlip.cs" />
     <Compile Include="OCR_Helper.cs" />
     <Compile Include="PNG_Converter.cs" />
     <Compile Include="PredefinedPayroll.cs" />
+    <Compile Include="ProcessorFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StatusMessage.cs" />
   </ItemGroup>

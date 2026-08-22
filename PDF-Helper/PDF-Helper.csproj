@@ -122,4 +122,21 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="AfterBuild">
+    <Exec Command="rmdir /s /q &quot;$(OutputPath)\arm&quot;" />
+    <Exec Command="rmdir /s /q &quot;$(OutputPath)\arm64&quot;" />
+    <Exec Command="rmdir /s /q &quot;$(OutputPath)\bionic-arm64&quot;" />
+    <Exec Command="rmdir /s /q &quot;$(OutputPath)\bionic-x64&quot;" />
+    <Exec Command="rmdir /s /q &quot;$(OutputPath)\loongarch64&quot;" />
+    <Exec Command="rmdir /s /q &quot;$(OutputPath)\musl-arm&quot;" />
+    <Exec Command="rmdir /s /q &quot;$(OutputPath)\musl-arm64&quot;" />
+    <Exec Command="rmdir /s /q &quot;$(OutputPath)\musl-loongarch64&quot;" />
+    <Exec Command="rmdir /s /q &quot;$(OutputPath)\musl-riscv64&quot;" />
+    <Exec Command="rmdir /s /q &quot;$(OutputPath)\musl-x64&quot;" />
+    <Exec Command="rmdir /s /q &quot;$(OutputPath)\musl-x86&quot;" />
+    <Exec Command="rmdir /s /q &quot;$(OutputPath)\riscv64&quot;" />
+    <Exec Command="rmdir /s /q &quot;$(OutputPath)\x86&quot;" />
+    <Exec Command="del /s /q &quot;$(OutputPath)\*.so&quot;" />
+    <Exec Command="del /s /q &quot;$(OutputPath)\*.dylib&quot;" />
+  </Target>
 </Project>
