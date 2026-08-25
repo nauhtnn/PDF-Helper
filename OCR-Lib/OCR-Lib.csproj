@@ -95,6 +95,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DocumentProcessor.cs" />
+    <Compile Include="DocumentType.cs" />
+    <Compile Include="DocumentTypeMapping.cs" />
+    <Compile Include="DocumentUtils.cs" />
     <Compile Include="LeaveSlip.cs" />
     <Compile Include="NER-LeaveSlip.cs" />
     <Compile Include="NER_LeaveSlip.Export.cs" />

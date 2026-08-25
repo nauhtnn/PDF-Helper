@@ -6,7 +6,20 @@ using System.Threading.Tasks;
 
 namespace OCR_Lib
 {
-    internal class TextMeasurement
+    public static class TextMeasurement
     {
+        public static string RemoveAccent(string input)
+        {
+            StringBuilder NoAccent = new StringBuilder();
+            foreach(char c in input.Normalize(NormalizationForm.FormD))
+            {
+                if(System.Globalization.CharUnicodeInfo.GetUnicodeCategory(c) != System.Globalization.UnicodeCategory.NonSpacingMark)
+                {
+                    NoAccent.Append(c);
+                }
+            }
+
+            return NoAccent.ToString();
+        }
     }
 }

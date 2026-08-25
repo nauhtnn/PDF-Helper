@@ -92,6 +92,8 @@ namespace OCR_Lib
 
             string[] lines = File.ReadAllLines(filePath);
 
+            DocumentUtils.IsFirstPageOfDocument(lines.ToList(), out DocumentType documentType);
+
             List<string> wrappedLines = BuildWrapLines(lines);
 
             List<string> sentences = BuildSentences(wrappedLines);
