@@ -1,6 +1,9 @@
 ﻿using Microsoft.Win32;
+using OCR_Lib;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,13 +11,12 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
+using System.Windows.Forms; // Namespace for FolderBrowserDialog
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using System.Windows.Forms; // Namespace for FolderBrowserDialog
-using OCR_Lib;
 
 namespace PDF_Helper
 {
@@ -109,7 +111,8 @@ namespace PDF_Helper
         private void PathTxb_LostFocus(object sender, RoutedEventArgs e)
         {
             var textBox = sender as System.Windows.Controls.TextBox;
-            if (textBox.Text == string.Empty || textBox.Text.Trim() == string.Empty)
+            textBox.Text = textBox.Text.Trim();
+            if (textBox.Text == string.Empty)
             {
                 if (sender == FolderPathTxb)
                 {
@@ -157,25 +160,19 @@ namespace PDF_Helper
             System.Threading.Thread folder_thread = null;
             System.Threading.Thread file_thread = null;
 
-            StatusMessage.GetInstance().AddMessage("Thực thi tác vụ.");
-
             ToggleOCR_Buttons(startOCR: true);
 
-            DocumentProcessor processor = null;
-            if(TaskCbb.SelectedItem == OCRItem)
-            {
-                processor = ProcessorFactory.CreateProcessor("OCR");
-            }
-            else
-            {
-                processor = ProcessorFactory.CreateProcessor("NER");
-            }
+            string taskName = TaskCbb.SelectedItem == OCRItem ? "OCR" : "NER";
+
+            StatusMessage.GetInstance().AddMessage("Thực thi tác vụ " + taskName + ".");
+
+            DocumentProcessor processor = ProcessorFactory.CreateProcessor(taskName);
 
             processor.StopRequested = false;
 
             if (!string.IsNullOrEmpty(FolderPathTxb.Text))
             {
-                string folderPath = FolderPathTxb.Text.Trim();
+                string folderPath = FolderPathTxb.Text;
                 if(folderPath != NO_FOLDER_PATH)
                 {
                     bool includeSubfolders = IncludeSubfoldersCkb.IsChecked ?? false;
@@ -185,7 +182,7 @@ namespace PDF_Helper
             }
             if (!string.IsNullOrEmpty(FilePathTxb.Text))
             {
-                string filePath = FilePathTxb.Text.Trim();
+                string filePath = FilePathTxb.Text;
                 if(filePath != NO_FILE_PATH)
                 {
                     file_thread = new System.Threading.Thread(new System.Threading.ThreadStart(() => processor.ProcessFile(filePath)));
@@ -204,13 +201,36 @@ namespace PDF_Helper
                     ToggleOCR_Buttons(startOCR: false);
                     if(TaskCbb.SelectedItem == NERItem)
                     {
-                        string exportFilePath = System.IO.Path.Combine(FolderPathTxb.Text.Trim(), "LeaveSlips.xlsx");
+                        string exportFilePath = null;
+                        Microsoft.Win32.SaveFileDialog saveResultDialog = new Microsoft.Win32.SaveFileDialog();
+                        saveResultDialog.Title = "Chọn file lưu kết quả";
+
+                        if (saveResultDialog.ShowDialog() == true)
+                        {
+                            exportFilePath = saveResultDialog.FileName;
+                        }
+
+                        if(string.IsNullOrEmpty(exportFilePath))
+                        {
+                            int tempIndex = 1;
+                            while (File.Exists(System.IO.Path.GetTempPath() + $"LeaveSlip_Export_{tempIndex}.xlsx"))
+                            {
+                                tempIndex++;
+                            }
+                            exportFilePath = System.IO.Path.GetTempPath() + $"LeaveSlip_Export_{tempIndex}.xlsx";
+                        }
+
+                        if(!exportFilePath.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
+                        {
+                            exportFilePath += ".xlsx";
+                        }
+
                         NER_LeaveSlip.GetInstance().ExportToXlsx(exportFilePath);
                         StatusMessage.GetInstance().AddMessage($"Xuất dữ liệu giấy nghỉ phép ra file Excel: {exportFilePath}");
                     }
                 });
 
-                StatusMessage.GetInstance().AddMessage("Hoàn thành tác vụ.");
+                StatusMessage.GetInstance().AddMessage("Hoàn thành tác vụ " + taskName + ".");
 
             }));
             finishedMessageThread.Start();

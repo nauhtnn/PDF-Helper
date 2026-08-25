@@ -179,17 +179,12 @@ namespace OCR_Lib
         {
             List<string> wrappedLines = new List<string>();
             System.Text.StringBuilder joinedLine = new System.Text.StringBuilder();
-            int newLineCount = 0;
             foreach (string line in lines)
             {
                 if (string.IsNullOrWhiteSpace(line))
                 {
-                    if (++newLineCount >= 2)
-                    {
-                        wrappedLines.Add(joinedLine.ToString().Trim());
-                        joinedLine.Clear();
-                        newLineCount = 0;
-                    }
+                    wrappedLines.Add(joinedLine.ToString().Trim());
+                    joinedLine.Clear();
                 }
                 else
                 {

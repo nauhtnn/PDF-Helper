@@ -106,6 +106,29 @@ namespace OCR_Lib
                 return;
             }
 
+            string fileExtension = Path.GetExtension(filePath);
+            if(FileTypes != null && FileTypes.Length > 0)
+            {
+                bool isSupported = false;
+                foreach (var fileType in FileTypes)
+                {
+                    if (fileType.StartsWith("*"))
+                    {
+                        string extension = fileType.Substring(1);
+                        if (string.Equals(fileExtension, extension, StringComparison.OrdinalIgnoreCase))
+                        {
+                            isSupported = true;
+                            break;
+                        }
+                    }
+                }
+                if (!isSupported)
+                {
+                    StatusMessage.GetInstance().AddMessage($"Tác vụ này không hỗ trợ định dạng file: {filePath} !");
+                    return;
+                }
+            }
+
             ProcessFileCore(filePath);
         }
 
