@@ -35,8 +35,11 @@ namespace OCR_Lib
 
             StatusMessage.GetInstance().AddMessage($"Bắt đầu đọc file: {filePath}.");
 
+            var engine = new TesseractEngine(@"./", "vie", EngineMode.Default);
+            var documentInfo = new DocumentGeneralInfo();
             var images = PNG_Converter.LoadFileForOCR(filePath);
-            var resultText = new System.Text.StringBuilder();
+            var resultFiles = new List<string>();
+            var bufferedText = new System.Text.StringBuilder();
             int pageIndex = 0;
             foreach (var image in images)
             {
@@ -44,23 +47,43 @@ namespace OCR_Lib
                 {
                     return;
                 }
-
-                // Initialize Tesseract with Vietnamese traineddata
-                using (var engine = new TesseractEngine(@"./", "vie", EngineMode.Default))
+                using (var pix = Pix.LoadFromMemory(image))
                 {
-                    using (var pix = Pix.LoadFromMemory(image))
+                    using (var page = engine.Process(pix))
                     {
-                        using (var page = engine.Process(pix))
+                        documentInfo.Clear();
+                        documentInfo.ProcessText(page.GetText());
+
+                        if(documentInfo.WrappedLines.Count == 0)
                         {
-                            resultText.AppendLine(page.GetText());
-                            StatusMessage.GetInstance().AddMessage($"Nhận dạng ký tự trang {++pageIndex}.");
+                            continue;
                         }
+
+                        if (documentInfo.DocumentTypeSingleLine != DocumentType.Other)
+                        {
+                            if (bufferedText.Length > 0)
+                            {
+                                resultFiles.Add(bufferedText.ToString());
+                                bufferedText.Clear();
+                            }
+                        }
+
+                        foreach (var line in documentInfo.WrappedLines)
+                        {
+                            bufferedText.AppendLine(line);
+                        }
+
+                        StatusMessage.GetInstance().AddMessage($"Nhận dạng ký tự trang {++pageIndex}.");
                     }
                 }
             }
 
-            var outputFilePath = Path.Combine(Path.GetDirectoryName(filePath), Path.GetFileNameWithoutExtension(filePath) + "_OCR.txt");
-            File.WriteAllText(outputFilePath, resultText.ToString(), System.Text.Encoding.UTF8);
+            int fileIndex = 0;
+            foreach(var fileContent in resultFiles)
+            {
+                var outputFilePath = Path.Combine(Path.GetDirectoryName(filePath), Path.GetFileNameWithoutExtension(filePath) + $"_{++fileIndex}_OCR.txt");
+                File.WriteAllText(outputFilePath, fileContent, System.Text.Encoding.UTF8);
+            }
 
             StatusMessage.GetInstance().AddMessage($"Hoàn thành đọc file: {filePath}.");
         }

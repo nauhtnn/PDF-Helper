@@ -12,7 +12,9 @@ namespace OCR_Lib
         new Dictionary<DocumentType, string>
         {
             { DocumentType.LeaveSlip, "GIAY NGHI PHEP" },
-            { DocumentType.Decision, "QUYET DINH" }
+            { DocumentType.LeaveRequest, "DON XIN NGHI PHEP" },
+            { DocumentType.Decision, "QUYET DINH" },
+            { DocumentType.Announcement, "THONG BAO" }
         };
     }
 }

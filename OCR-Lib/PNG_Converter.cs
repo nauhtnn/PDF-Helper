@@ -1,4 +1,5 @@
-﻿using OpenCvSharp;
+﻿using DocumentFormat.OpenXml.Spreadsheet;
+using OpenCvSharp;
 using PDFtoImage;
 using SkiaSharp;
 using System;
@@ -18,16 +19,18 @@ namespace OCR_Lib
             var streams = new List<MemoryStream>();
             byte[] bytes = File.ReadAllBytes(pdfPath);
             var pageCount = Conversion.GetPageCount(bytes);
-            foreach(var page in Enumerable.Range(0, pageCount))
+            int pageIndex = 0;
+            while(pageIndex < pageCount)
             {
                 var stream = new MemoryStream();
-                using (SkiaSharp.SKBitmap bitmap = Conversion.ToImage(bytes, page))
+                using (SkiaSharp.SKBitmap bitmap = Conversion.ToImage(bytes, pageIndex))
                 using (var image = SkiaSharp.SKImage.FromBitmap(bitmap))
                 using (var data = image.Encode(SkiaSharp.SKEncodedImageFormat.Png, 100))
                 {
                     data.SaveTo(stream);
                 }
                 streams.Add(stream);
+                StatusMessage.GetInstance().AddMessage($"Tải lên RAM trang {++pageIndex}.");
             }
             
             return streams;
@@ -70,7 +73,7 @@ namespace OCR_Lib
 
             foreach(var stream in streams)
             {
-                Mat image = Cv2.ImDecode(stream.ToArray(), ImreadModes.Grayscale);
+                Mat image = Cv2.ImDecode(stream.GetBuffer(), ImreadModes.Grayscale);
                 CvThreshold(image);
                 images.Add(image);
             }

@@ -31,12 +31,6 @@ namespace OCR_Lib
 
         protected override void ProcessFileCore(string filePath)
         {
-            if (!File.Exists(filePath))
-            {
-                StatusMessage.GetInstance().AddMessage(filePath + " không phải là đường dẫn của một file !");
-                return;
-            }
-
             if(LeaveSlips.ContainsKey(filePath))
             {
                 StatusMessage.GetInstance().AddMessage($"File {filePath} đã được xử lý trước đó, bỏ qua.");
@@ -90,19 +84,20 @@ namespace OCR_Lib
         {
             StatusMessage.GetInstance().AddMessage($"Bắt đầu đọc file: {filePath}.");
 
-            string[] lines = File.ReadAllLines(filePath);
+            var documentInfo = new DocumentGeneralInfo();
+            documentInfo.ProcessFile(filePath);
 
-            DocumentUtils.IsFirstPageOfDocument(lines.ToList(), out DocumentType documentType);
-
-            List<string> wrappedLines = BuildWrapLines(lines);
-
-            List<string> sentences = BuildSentences(wrappedLines);
+            if(documentInfo.DocumentTypeSingleLine != DocumentType.LeaveSlip)
+            {
+                StatusMessage.GetInstance().AddMessage($"File {filePath} không phải là giấy nghỉ phép, bỏ qua.");
+                return;
+            }
 
             LeaveSlip leaveSlip = new LeaveSlip();
 
             leaveSlip.FilePath = filePath;
 
-            foreach (string sentence in sentences)
+            foreach (string sentence in documentInfo.Sentences)
             {
                 MatchCollection dates = Regex.Matches(sentence, @"\b\d{1,2}(/|-|\.)\d{1,2}(/|-|\.)\d{4}\b");
 
@@ -156,51 +151,6 @@ namespace OCR_Lib
             LeaveSlips.Add(filePath, leaveSlip);
 
             StatusMessage.GetInstance().AddMessage("Tìm thấy:" + leaveSlip.ToString());
-        }
-
-        List<string> BuildSentences(List<string> wrappedLines)
-        {
-            List<string> sentences = new List<string>();
-            foreach (string line in wrappedLines)
-            {
-                // Simple sentence splitting logic - replace with actual NER sentence splitting as needed
-                string[] subSentences = line.Split(new char[] { '.', '!', '?' }, StringSplitOptions.RemoveEmptyEntries);
-                foreach (string subSentence in subSentences)
-                {
-                    string trimmedSentence = subSentence.Trim();
-                    if (!string.IsNullOrEmpty(trimmedSentence))
-                    {
-                        sentences.Add(trimmedSentence);
-                    }
-                }
-            }
-            return sentences;
-        }
-
-        List<string> BuildWrapLines(string[] lines)
-        {
-            List<string> wrappedLines = new List<string>();
-            System.Text.StringBuilder joinedLine = new System.Text.StringBuilder();
-            foreach (string line in lines)
-            {
-                if (string.IsNullOrWhiteSpace(line))
-                {
-                    wrappedLines.Add(joinedLine.ToString().Trim());
-                    joinedLine.Clear();
-                }
-                else
-                {
-                    joinedLine.Append(line + " ");
-                }
-            }
-
-            // Add the last joined line if it has content
-            if (joinedLine.Length > 0)
-            {
-                wrappedLines.Add(joinedLine.ToString().Trim());
-            }
-
-            return wrappedLines;
         }
     }
 }
