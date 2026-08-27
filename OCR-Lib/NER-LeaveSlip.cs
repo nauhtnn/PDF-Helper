@@ -87,7 +87,8 @@ namespace OCR_Lib
             var documentInfo = new DocumentGeneralInfo();
             documentInfo.ProcessFile(filePath);
 
-            if(documentInfo.DocumentTypeSingleLine != DocumentType.LeaveSlip)
+            if(documentInfo.DetectedDocType != DocumentType.LeaveSlip &&
+                documentInfo.DetectedDocType != DocumentType.LeaveRequest)
             {
                 StatusMessage.GetInstance().AddMessage($"File {filePath} không phải là giấy nghỉ phép, bỏ qua.");
                 return;

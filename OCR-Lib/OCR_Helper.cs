@@ -36,7 +36,6 @@ namespace OCR_Lib
 
             var images = PNG_Converter.LoadFileForOCR(filePath);
             var engine = new TesseractEngine(@"./", "vie", EngineMode.Default);
-            var documentInfo = new DocumentGeneralInfo();
             var resultFiles = new List<string>();
             var bufferedText = new System.Text.StringBuilder();
             int pageIndex = 0;
@@ -50,15 +49,21 @@ namespace OCR_Lib
                 {
                     using (var page = engine.Process(pix))
                     {
-                        documentInfo.Clear();
-                        documentInfo.ProcessText(page.GetText());
+                        string[] lines = page.GetText().Split(new[] { '\n' });
 
-                        if(documentInfo.WrappedLines.Count == 0)
+                        var docType = DocumentType.Unknown;
+
+                        foreach (var line in lines)
                         {
-                            continue;
+                            var detectedType = DocumentTypeMapping.ParseUpperDocumentTypeLine(line);
+                            if (detectedType != DocumentType.Unknown)
+                            {
+                                docType = detectedType;
+                                break;
+                            }
                         }
 
-                        if (documentInfo.DocumentTypeSingleLine != DocumentType.Other)
+                        if (docType != DocumentType.Unknown)
                         {
                             if (bufferedText.Length > 0)
                             {
@@ -67,10 +72,7 @@ namespace OCR_Lib
                             }
                         }
 
-                        foreach (var line in documentInfo.WrappedLines)
-                        {
-                            bufferedText.AppendLine(line);
-                        }
+                        bufferedText.AppendLine(page.GetText());
 
                         StatusMessage.GetInstance().AddMessage($"Nhận dạng ký tự trang {++pageIndex}.");
                     }

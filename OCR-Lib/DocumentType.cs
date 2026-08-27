@@ -26,6 +26,6 @@ namespace OCR_Lib
         LUAT,
         NGHI_DINH,
         THONG_TU,
-        Other
+        Unknown
     }
 }

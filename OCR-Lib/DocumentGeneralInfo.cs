@@ -8,36 +8,22 @@ namespace OCR_Lib
 {
     public class DocumentGeneralInfo
     {
-        public DocumentType DocumentTypeSingleLine { get; private set; }
+        public DocumentType DetectedDocType { get; private set; }
         public List<string> WrappedLines { get; private set; }
         public List<string> Sentences { get; private set; }
 
         public DocumentGeneralInfo()
         {
-            DocumentTypeSingleLine = DocumentType.Other;
+            DetectedDocType = DocumentType.Unknown;
             WrappedLines = new List<string>();
             Sentences = new List<string>();
         }
 
         public void Clear()
         {
-            DocumentTypeSingleLine = DocumentType.Other;
+            DetectedDocType = DocumentType.Unknown;
             WrappedLines.Clear();
             Sentences.Clear();
-        }
-
-        bool IsDocumentTypeSingleLine(string line)
-        {
-            var simpleLine = TextMeasurement.RemoveAccent(line);
-            foreach (var mapping in DocumentTypeMapping.UpperUnmarked)
-            {
-                if (simpleLine.StartsWith(mapping.Value))
-                {
-                    DocumentTypeSingleLine = mapping.Key;
-                    return true;
-                }
-            }
-            return false;
         }
 
         void BuildSentences()
@@ -61,6 +47,11 @@ namespace OCR_Lib
         {
             string[] lines = System.IO.File.ReadAllLines(filePath);
             ParseLines(lines);
+#if DEBUG
+            string debugFilePath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(filePath),
+                System.IO.Path.GetFileName(filePath) + "_docGen_debug.txt");
+            System.IO.File.WriteAllText(debugFilePath, string.Join(Environment.NewLine, WrappedLines));
+#endif
         }
 
         public void ProcessText(string text)
@@ -75,6 +66,23 @@ namespace OCR_Lib
             BuildSentences();
         }
 
+        void TakeNonEmptyLines(string[] lines)
+        {
+            foreach (string line in lines)
+            {
+                string trimmedLine = line.Trim();
+                if (!string.IsNullOrWhiteSpace(trimmedLine))
+                {
+                    WrappedLines.Add(trimmedLine);
+                    var detectedType = DocumentTypeMapping.ParseUpperDocumentTypeLine(trimmedLine);
+                    if (detectedType != DocumentType.Unknown)
+                    {
+                        DetectedDocType = detectedType;
+                    }
+                }
+            }
+        }
+
         void BuildWrappedLines(string[] lines)
         {
             System.Text.StringBuilder joinedLine = new System.Text.StringBuilder();
@@ -85,15 +93,20 @@ namespace OCR_Lib
                     WrappedLines.Add(joinedLine.ToString().Trim());
                     joinedLine.Clear();
                 }
-                else if(IsDocumentTypeSingleLine(line))
-                {
-                    WrappedLines.Add(joinedLine.ToString().Trim());
-                    joinedLine.Clear();
-                    WrappedLines.Add(line.Trim());
-                }
                 else
                 {
-                    joinedLine.Append(line + " ");
+                    var detectedType = DocumentTypeMapping.ParseUpperDocumentTypeLine(line);
+                    if (detectedType != DocumentType.Unknown)
+                    {
+                        DetectedDocType = detectedType;
+                        WrappedLines.Add(joinedLine.ToString().Trim());
+                        joinedLine.Clear();
+                        WrappedLines.Add(line.Trim());
+                    }
+                    else
+                    {
+                        joinedLine.Append(line + " ");
+                    }
                 }
             }
 

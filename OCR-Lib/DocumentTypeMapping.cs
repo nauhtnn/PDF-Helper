@@ -44,5 +44,18 @@ namespace OCR_Lib
                 kvp => kvp.Key,
                 kvp => TextMeasurement.SentenceCase(kvp.Value)
             );
+
+        public static DocumentType ParseUpperDocumentTypeLine(string line)
+        {
+            var simpleLine = TextMeasurement.RemoveAccent(line);
+            foreach (var mapping in DocumentTypeMapping.UpperUnmarked)
+            {
+                if (simpleLine.StartsWith(mapping.Value))
+                {
+                    return mapping.Key;
+                }
+            }
+            return DocumentType.Unknown;
+        }
     }
 }
