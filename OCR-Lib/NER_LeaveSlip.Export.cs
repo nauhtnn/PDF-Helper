@@ -13,70 +13,78 @@ namespace OCR_Lib
     {
         public void ExportToXlsx(string filePath)
         {
-            using (SpreadsheetDocument document = SpreadsheetDocument.Create(filePath, SpreadsheetDocumentType.Workbook))
+            SpreadsheetDocument document = null;
+            
+            try
             {
-                WorkbookPart workbookPart = document.AddWorkbookPart();
-                workbookPart.Workbook = new Workbook();
+                document = SpreadsheetDocument.Create(filePath, SpreadsheetDocumentType.Workbook);
+            }
+            catch(Exception ex)
+            {
+                StatusMessage.GetInstance().AddMessage($"Không thể tạo file {filePath}. Lỗi: {ex.Message}");
+                return;
+            }
 
-                WorksheetPart worksheetPart = workbookPart.AddNewPart<WorksheetPart>();
-                SheetData sheetData = new SheetData();
-                worksheetPart.Worksheet = new Worksheet(sheetData);
+            WorkbookPart workbookPart = document.AddWorkbookPart();
+            workbookPart.Workbook = new Workbook();
 
-                Sheets sheets = document.WorkbookPart.Workbook.AppendChild(new Sheets());
-                Sheet sheet = new Sheet()
-                {
-                    Id = document.WorkbookPart.GetIdOfPart(worksheetPart),
-                    SheetId = 1,
-                    Name = "LeaveSlips"
-                };
-                sheets.Append(sheet);
+            WorksheetPart worksheetPart = workbookPart.AddNewPart<WorksheetPart>();
+            SheetData sheetData = new SheetData();
+            worksheetPart.Worksheet = new Worksheet(sheetData);
 
-                // Define headers
-                string[] headers = new[]
-                {
-                "FilePath",
-                "CommittingDate",
-                "StartLeaveDate",
-                "EndLeaveDate",
-                "UndefinedDates",
-                "NumberOfLeaveDays",
-                "EmployeeNames"
+            Sheets sheets = document.WorkbookPart.Workbook.AppendChild(new Sheets());
+            Sheet sheet = new Sheet()
+            {
+                Id = document.WorkbookPart.GetIdOfPart(worksheetPart),
+                SheetId = 1,
+                Name = "LeaveSlips"
+            };
+            sheets.Append(sheet);
+
+            // Define headers
+            string[] headers = new[]
+            {
+                "Loại văn bản",
+                "Ngày nộp đơn",
+                "Ngày bắt đầu nghỉ",
+                "Ngày kết thúc nghỉ",
+                "Các ngày khác",
+                "Số ngày nghỉ",
+                "Tên người",
+                "Đường dẫn File",
             };
 
-                // Add header row
-                Row headerRow = new Row();
-                foreach (string header in headers)
-                {
-                    Cell cell = new Cell
-                    {
-                        DataType = CellValues.String,
-                        CellValue = new CellValue(header)
-                    };
-                    headerRow.Append(cell);
-                }
-                sheetData.Append(headerRow);
-
-                // Add data rows
-                foreach (var kvp in LeaveSlips)
-                {
-                    LeaveSlip slip = kvp.Value;
-                    Row row = new Row();
-
-                    row.Append(
-                        CreateTextCell(slip.FilePath),
-                        CreateTextCell(slip.CommittingDate),
-                        CreateTextCell(slip.StartLeaveDate),
-                        CreateTextCell(slip.EndLeaveDate),
-                        CreateTextCell(string.Join(", ", slip.UndefinedDates ?? new List<string>())),
-                        CreateNumberCell(slip.NumberOfLeaveDays),
-                        CreateTextCell(string.Join(", ", slip.EmployeeNames ?? new List<string>()))
-                    );
-
-                    sheetData.Append(row);
-                }
-
-                workbookPart.Workbook.Save();
+            // Add header row
+            Row headerRow = new Row();
+            foreach (string header in headers)
+            {
+                headerRow.Append(CreateTextCell(header));
             }
+            sheetData.Append(headerRow);
+
+            // Add data rows
+            foreach (var kvp in LeaveSlips)
+            {
+                LeaveSlip slip = kvp.Value;
+                Row row = new Row();
+
+                row.Append(
+                    CreateTextCell(DocumentTypeMapping.SentenceCase[DocumentType.LeaveSlip]),
+                    CreateTextCell(slip.CommittingDate),
+                    CreateTextCell(slip.StartLeaveDate),
+                    CreateTextCell(slip.EndLeaveDate),
+                    CreateTextCell(string.Join(", ", slip.UndefinedDates ?? new List<string>())),
+                    CreateNumberCell(slip.NumberOfLeaveDays),
+                    CreateTextCell(string.Join(", ", slip.EmployeeNames ?? new List<string>())),
+                    CreateTextCell(slip.FilePath)
+                );
+
+                sheetData.Append(row);
+            }
+
+            workbookPart.Workbook.Save();
+
+            document.Dispose();
         }
 
         private Cell CreateTextCell(string text)

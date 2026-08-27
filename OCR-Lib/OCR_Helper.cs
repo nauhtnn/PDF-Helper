@@ -22,8 +22,7 @@ namespace OCR_Lib
 
         public OCR_Helper()
         {
-            FileTypes = new string[] { "*.pdf" };
-            //FileTypes = new string[] { "*.png", "*.jpg", "*.jpeg", "*.tif", "*.tiff" };
+            FileTypes = new string[] { "*.pdf", "*.png", "*.jpg", "*.jpeg", "*.tif", "*.tiff" };
         }
 
         protected override void ProcessFileCore(string filePath)
@@ -35,9 +34,9 @@ namespace OCR_Lib
 
             StatusMessage.GetInstance().AddMessage($"Bắt đầu đọc file: {filePath}.");
 
+            var images = PNG_Converter.LoadFileForOCR(filePath);
             var engine = new TesseractEngine(@"./", "vie", EngineMode.Default);
             var documentInfo = new DocumentGeneralInfo();
-            var images = PNG_Converter.LoadFileForOCR(filePath);
             var resultFiles = new List<string>();
             var bufferedText = new System.Text.StringBuilder();
             int pageIndex = 0;

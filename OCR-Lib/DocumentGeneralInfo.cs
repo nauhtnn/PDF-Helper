@@ -29,9 +29,9 @@ namespace OCR_Lib
         bool IsDocumentTypeSingleLine(string line)
         {
             var simpleLine = TextMeasurement.RemoveAccent(line);
-            foreach (var mapping in DocumentTypeMapping.Values)
+            foreach (var mapping in DocumentTypeMapping.UpperUnmarked)
             {
-                if (simpleLine.Equals(mapping.Value))
+                if (simpleLine.StartsWith(mapping.Value))
                 {
                     DocumentTypeSingleLine = mapping.Key;
                     return true;

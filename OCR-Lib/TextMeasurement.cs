@@ -21,5 +21,17 @@ namespace OCR_Lib
 
             return NoAccent.ToString();
         }
+
+        public static string SentenceCase(string sentence)
+        {
+            if (string.IsNullOrEmpty(sentence))
+                return sentence;
+
+            if(sentence.Length == 1)
+                return sentence.ToUpper();
+
+            sentence = sentence.ToLower();
+            return char.ToUpper(sentence[0]) + sentence.Substring(1);
+        }
     }
 }
