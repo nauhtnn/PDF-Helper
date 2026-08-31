@@ -34,49 +34,75 @@ namespace OCR_Lib
 
             StatusMessage.GetInstance().AddMessage($"Bắt đầu đọc file: {filePath}.");
 
-            var images = PNG_Converter.LoadFileForOCR(filePath);
+            var pages = PNG_Converter.LoadFileForOCR(filePath);
             var engine = new TesseractEngine(@"./", "vie", EngineMode.Default);
             var resultFiles = new List<string>();
-            var bufferedText = new System.Text.StringBuilder();
+            var pageText = new StringBuilder();
+            var joinedPageText = new StringBuilder();
             int pageIndex = 0;
-            foreach (var image in images)
+            foreach (var page in pages)
             {
+                pageText.Clear();
+
                 if (StopRequested)
                 {
                     return;
                 }
-                using (var pix = Pix.LoadFromMemory(image))
+
+                List<byte[]> data;
+                if(page is OcrPageImage)
                 {
-                    using (var page = engine.Process(pix))
+                    data = new List<byte[]>();
+                    data.Add((page as OcrPageImage).WholeImage);
+                }
+                else
+                {
+                    data = (page as OcrPageSegments).Segments;
+                }
+
+                foreach (var segment in data)
+                {
+                    using (var pix = Pix.LoadFromMemory(segment))
                     {
-                        string[] lines = page.GetText().Split(new[] { '\n' });
-
-                        var docType = DocumentType.Unknown;
-
-                        foreach (var line in lines)
+                        using (var t = engine.Process(pix))
                         {
-                            var detectedType = DocumentTypeMapping.ParseUpperDocumentTypeLine(line);
-                            if (detectedType != DocumentType.Unknown)
-                            {
-                                docType = detectedType;
-                                break;
-                            }
+                            pageText.AppendLine(t.GetText());
                         }
-
-                        if (docType != DocumentType.Unknown)
-                        {
-                            if (bufferedText.Length > 0)
-                            {
-                                resultFiles.Add(bufferedText.ToString());
-                                bufferedText.Clear();
-                            }
-                        }
-
-                        bufferedText.AppendLine(page.GetText());
-
-                        StatusMessage.GetInstance().AddMessage($"Nhận dạng ký tự trang {++pageIndex}.");
                     }
                 }
+
+                string[] lines = pageText.ToString().Split(new[] { '\n' });
+
+                var docType = DocumentType.Unknown;
+
+                foreach (var line in lines)
+                {
+                    var detectedType = DocumentTypeMapping.ParseUpperDocumentTypeLine(line);
+                    if (detectedType != DocumentType.Unknown)
+                    {
+                        docType = detectedType;
+                        break;
+                    }
+                }
+
+                if (docType != DocumentType.Unknown)
+                {
+                    if (joinedPageText.Length > 0)
+                    {
+                        resultFiles.Add(joinedPageText.ToString());
+                        joinedPageText.Clear();
+                    }
+                }
+
+                joinedPageText.AppendLine(pageText.ToString());
+
+                StatusMessage.GetInstance().AddMessage($"Nhận dạng ký tự trang {++pageIndex}.");
+            }
+
+            if (joinedPageText.Length > 0)
+            {
+                resultFiles.Add(joinedPageText.ToString());
+                joinedPageText.Clear();
             }
 
             int fileIndex = 0;

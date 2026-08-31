@@ -41,7 +41,7 @@ namespace OCR_Lib
             Cv2.Threshold(img, img, 0, 255, ThresholdTypes.Otsu);
         }
 
-        public static List<byte[]> LoadFileForOCR(string filePath)
+        public static List<OcrPageData> LoadFileForOCR(string filePath, bool segment = true)
         {
             List<Mat> images;
             if(filePath.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
@@ -54,7 +54,56 @@ namespace OCR_Lib
                 images = new List<Mat> { CvPreprocessImageFile(filePath) };
             }
 
-            return images.Select(img => img.ToBytes()).ToList();
+            if(segment)
+            {
+                var segmentedPages = new List<OcrPageData>();
+                foreach (var img in images)
+                {
+                    var segmentedPage = new OcrPageSegments();
+
+                    var segments = SegmentImage(img);
+
+                    foreach (var seg in segments)
+                        segmentedPage.AddSegment(seg.ToBytes());
+
+                    segmentedPages.Add(segmentedPage);
+                }
+                return segmentedPages;
+            }
+
+            var page = new List<OcrPageData>();
+            foreach (var img in images)
+                page.Add(new OcrPageImage(img.ToBytes()));
+            return page;
+        }
+
+        static List<Mat> SegmentImage(Mat image)
+        {
+            var segments = new List<Mat>();
+
+            // Find contours
+            Point[][] contours;
+            HierarchyIndex[] hierarchy;
+            Cv2.FindContours(image, out contours, out hierarchy,
+                             RetrievalModes.External,
+                             ContourApproximationModes.ApproxSimple);
+
+            foreach (var contour in contours)
+            {
+                Rect rect = Cv2.BoundingRect(contour);
+
+                // Filter out noise by size
+                if (rect.Width > 20 && rect.Height > 10)
+                {
+                    Mat roi = new Mat(image, rect);
+                    segments.Add(roi);
+                }
+            }
+#if DEBUG
+            StatusMessage.GetInstance().AddMessage("The number of segments: " + segments.Count);
+#endif
+
+            return segments;
         }
 
         static Mat CvPreprocessImageFile(string filePath)
