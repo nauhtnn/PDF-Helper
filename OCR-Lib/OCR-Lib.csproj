@@ -104,22 +104,29 @@
     <Compile Include="OCR\Entities\OcrPageData.cs" />
     <Compile Include="OCR\Entities\OcrPageImage.cs" />
     <Compile Include="OCR\Entities\OcrPageSegments.cs" />
+    <Compile Include="OCR\ImageSegmenter.cs" />
+    <Compile Include="OCR\OcrSettings.cs" />
     <Compile Include="OCR_Helper.cs" />
     <Compile Include="PNG_Converter.cs" />
     <Compile Include="PredefinedPayroll.cs" />
     <Compile Include="ProcessorFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StatusMessage.cs" />
+    <Compile Include="PathHelper.cs" />
     <Compile Include="TextMeasurement.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="packages.config" />
-    <None Include="vie.traineddata">
+    <None Include="OCR\vie.traineddata">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="OCR\OcrSettings.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

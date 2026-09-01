@@ -35,7 +35,7 @@ namespace OCR_Lib
             StatusMessage.GetInstance().AddMessage($"Bắt đầu đọc file: {filePath}.");
 
             var pages = PNG_Converter.LoadFileForOCR(filePath);
-            var engine = new TesseractEngine(@"./", "vie", EngineMode.Default);
+            var engine = new TesseractEngine(@"OCR\\", "vie", EngineMode.Default);
             var resultFiles = new List<string>();
             var pageText = new StringBuilder();
             var joinedPageText = new StringBuilder();

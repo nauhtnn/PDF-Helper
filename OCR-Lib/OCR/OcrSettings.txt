@@ -1,0 +1,5 @@
+LineProjectionThreshold=9
+ColumnProjectionThreshold=99
+MinLineHeight=32
+MinColumnWidth=32
+EnableGaussianBlur=0

@@ -39,6 +39,10 @@ namespace OCR_Lib
         static void CvThreshold(Mat img)
         {
             Cv2.Threshold(img, img, 0, 255, ThresholdTypes.Otsu);
+
+            // Apply Gaussian blur
+            if(OcrSettings.GetInstance().EnableGaussianBlur)
+                Cv2.GaussianBlur(img, img, new Size(5, 5), 0);
         }
 
         public static List<OcrPageData> LoadFileForOCR(string filePath, bool segment = true)
@@ -61,7 +65,7 @@ namespace OCR_Lib
                 {
                     var segmentedPage = new OcrPageSegments();
 
-                    var segments = SegmentImage(img);
+                    var segments = ImageSegmenter.GetInstance().SegmentByProjection(img);// SegmentImage(img);
 
                     foreach (var seg in segments)
                         segmentedPage.AddSegment(seg.ToBytes());
@@ -99,9 +103,6 @@ namespace OCR_Lib
                     segments.Add(roi);
                 }
             }
-#if DEBUG
-            StatusMessage.GetInstance().AddMessage("The number of segments: " + segments.Count);
-#endif
 
             return segments;
         }
