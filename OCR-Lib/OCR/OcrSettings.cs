@@ -24,7 +24,8 @@ namespace OCR_Lib
         public int ColumnProjectionThreshold { get; private set; }
         public int MinLineHeight { get; private set; }
         public int MinColumnWidth { get; private set; }
-        public bool EnableGaussianBlur { get; private set; }
+        public bool IsGaussianBlurEnabled { get; private set; }
+        public bool IsLineRemovalEnabled { get; private set; }
 
         OcrSettings()
         {
@@ -45,7 +46,8 @@ namespace OCR_Lib
             ColumnProjectionThreshold = 99;
             MinLineHeight = 32;
             MinColumnWidth = 32;
-            EnableGaussianBlur = false;
+            IsGaussianBlurEnabled = false;
+            IsLineRemovalEnabled = true;
         }
 
         // Load method
@@ -82,14 +84,18 @@ namespace OCR_Lib
                         MinColumnWidth = int.Parse(value);
                         flag |= 0x1000;
                         break;
-                    case "EnableGaussianBlur":
-                        EnableGaussianBlur = int.Parse(value) > 0;
+                    case "IsGaussianBlurEnabled":
+                        IsGaussianBlurEnabled = int.Parse(value) > 0;
                         flag |= 0x10000;
+                        break;
+                    case "IsLineRemovalEnabled":
+                        IsLineRemovalEnabled = int.Parse(value) > 0;
+                        flag |= 0x100000;
                         break;
                 }
             }
 
-            return flag == 0x11111;
+            return flag == 0x111111;
         }
     }
 }

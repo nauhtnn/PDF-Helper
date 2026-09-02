@@ -41,7 +41,7 @@ namespace OCR_Lib
             Cv2.Threshold(img, img, 0, 255, ThresholdTypes.Otsu);
 
             // Apply Gaussian blur
-            if(OcrSettings.GetInstance().EnableGaussianBlur)
+            if(OcrSettings.GetInstance().IsGaussianBlurEnabled)
                 Cv2.GaussianBlur(img, img, new Size(5, 5), 0);
         }
 
@@ -65,7 +65,7 @@ namespace OCR_Lib
                 {
                     var segmentedPage = new OcrPageSegments();
 
-                    var segments = ImageSegmenter.GetInstance().SegmentByProjection(img);// SegmentImage(img);
+                    var segments = ImageSegmenter.GetInstance().SegmentByProjection(img);
 
                     foreach (var seg in segments)
                         segmentedPage.AddSegment(seg.ToBytes());
@@ -81,38 +81,15 @@ namespace OCR_Lib
             return page;
         }
 
-        static List<Mat> SegmentImage(Mat image)
-        {
-            var segments = new List<Mat>();
-
-            // Find contours
-            Point[][] contours;
-            HierarchyIndex[] hierarchy;
-            Cv2.FindContours(image, out contours, out hierarchy,
-                             RetrievalModes.External,
-                             ContourApproximationModes.ApproxSimple);
-
-            foreach (var contour in contours)
-            {
-                Rect rect = Cv2.BoundingRect(contour);
-
-                // Filter out noise by size
-                if (rect.Width > 20 && rect.Height > 10)
-                {
-                    Mat roi = new Mat(image, rect);
-                    segments.Add(roi);
-                }
-            }
-
-            return segments;
-        }
-
         static Mat CvPreprocessImageFile(string filePath)
         {
             Mat image = Cv2.ImRead(filePath, ImreadModes.Grayscale);
             CvThreshold(image);
+            if (OcrSettings.GetInstance().IsLineRemovalEnabled)
+                image = RemoveHorizontalLines(image);
 #if DEBUG
-            Cv2.ImWrite("processed.png", image);
+            DebugContours(image, PathHelper.GenerateLocalFile("contours.png"));
+            Cv2.ImWrite(PathHelper.GenerateLocalFile("processed.png"), image);
 #endif
             return image;
         }
@@ -125,9 +102,108 @@ namespace OCR_Lib
             {
                 Mat image = Cv2.ImDecode(stream.GetBuffer(), ImreadModes.Grayscale);
                 CvThreshold(image);
+                if (OcrSettings.GetInstance().IsLineRemovalEnabled)
+                    image = RemoveHorizontalLines(image);
                 images.Add(image);
             }
             return images;
+        }
+
+        public static Mat RemoveHorizontalLines(Mat src,
+            RetrievalModes retrievalMode = RetrievalModes.List,
+            ContourApproximationModes approxMode = ContourApproximationModes.ApproxNone)
+        {
+            // Wide horizontal kernel
+            int horizontalSize = OcrSettings.GetInstance().ColumnProjectionThreshold;
+            Mat horizontalStructure = Cv2.GetStructuringElement(MorphShapes.Rect, new Size(horizontalSize, 1));
+
+            // Detect horizontal candidates
+            Mat detectedLines = new Mat();
+            Cv2.Erode(src, detectedLines, horizontalStructure);
+            Cv2.Dilate(detectedLines, detectedLines, horizontalStructure);
+
+            // Find contours of detected lines
+            Cv2.FindContours(detectedLines, out Point[][] contours, out HierarchyIndex[] hierarchy,
+                             retrievalMode, approxMode);
+#if DEBUG
+            DebugContours(detectedLines, PathHelper.GenerateLocalFile("contours.png"));
+#endif
+
+            // Build mask only for the thin line
+            Mat mask = Mat.Zeros(src.Size(), MatType.CV_8UC1);
+            foreach (var contour in contours)
+            {
+                Rect rect = Cv2.BoundingRect(contour);
+
+                // Keep only objects with width ~240 px and height ~3 px
+                if (rect.Width >= OcrSettings.GetInstance().MinColumnWidth * 3 && rect.Height <= OcrSettings.GetInstance().LineProjectionThreshold)
+                {
+                    Cv2.DrawContours(mask, new[] { contour }, -1, Scalar.White, -1);
+                }
+            }
+
+            int lineRemovalMode = 0;
+
+            if(lineRemovalMode == 0)
+            {
+#if DEBUG
+                Cv2.ImWrite(PathHelper.GenerateLocalFile("detectedLines.png"), mask);
+#endif
+                // Fill the masked area with white directly
+                src.SetTo(Scalar.White, mask);
+                return src;
+            }
+            else if (lineRemovalMode == 1)
+            {
+                Cv2.BitwiseNot(mask, mask);
+#if DEBUG
+                Cv2.ImWrite(PathHelper.GenerateLocalFile("detectedLines.png"), mask);
+#endif
+                Mat result = new Mat();
+                Cv2.BitwiseAnd(src, src, result, mask);
+                return result;
+            }
+            else
+            {
+                // Inpaint to remove the line
+                //Mat result = new Mat();
+                //Cv2.Inpaint(src, mask, result, 3, InpaintMethod.Telea);
+                return null;//This idea is under construction. It has not been finished.
+            }
+        }
+
+#if DEBUG
+        public static void DebugContours(Mat src, string debugPath,
+            RetrievalModes retrievalMode = RetrievalModes.List,
+            ContourApproximationModes approxMode = ContourApproximationModes.ApproxNone)
+        {
+            // src is already binary thresholded
+
+            int horizontalSize = src.Cols / 30;
+            Mat horizontalStructure = Cv2.GetStructuringElement(MorphShapes.Rect, new Size(horizontalSize, 1));
+
+            // Detect horizontal candidates
+            Mat detectedLines = new Mat();
+            Cv2.Erode(src, detectedLines, horizontalStructure);
+            Cv2.Dilate(detectedLines, detectedLines, horizontalStructure);
+
+            // Find contours
+            Cv2.FindContours(detectedLines, out Point[][] contours, out HierarchyIndex[] hierarchy,
+                             retrievalMode, approxMode);
+
+            // Convert to BGR for colored drawing
+            Mat debugImage = new Mat();
+            Cv2.CvtColor(src, debugImage, ColorConversionCodes.GRAY2BGR);
+
+            // Draw bounding boxes
+            foreach (var contour in contours)
+            {
+                Rect rect = Cv2.BoundingRect(contour);
+                Cv2.Rectangle(debugImage, rect, new Scalar(0, 0, 255), 2); // red box
+            }
+
+            // Save debug image
+            Cv2.ImWrite(debugPath, debugImage);
         }
 
         public static void Debug_SavePDF_to_PNG_File(string pdfPath, string outputDir)
@@ -154,5 +230,6 @@ namespace OCR_Lib
                 }
             }
         }
+#endif
     }
 }
