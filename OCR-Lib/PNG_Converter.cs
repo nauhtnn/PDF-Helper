@@ -88,7 +88,7 @@ namespace OCR_Lib
             if (OcrSettings.GetInstance().IsLineRemovalEnabled)
                 image = RemoveHorizontalLines(image);
 #if DEBUG
-            DebugContours(image, PathHelper.GenerateLocalFile("contours.png"));
+            DebugContoursHierarchy(image, PathHelper.GenerateLocalFile("all_contours.png"));
             Cv2.ImWrite(PathHelper.GenerateLocalFile("processed.png"), image);
 #endif
             return image;
@@ -102,107 +102,97 @@ namespace OCR_Lib
             {
                 Mat image = Cv2.ImDecode(stream.GetBuffer(), ImreadModes.Grayscale);
                 CvThreshold(image);
+#if DEBUG
+                DebugContoursHierarchy(image, PathHelper.GenerateLocalFile("all_contours.png"));
+#endif
                 if (OcrSettings.GetInstance().IsLineRemovalEnabled)
                     image = RemoveHorizontalLines(image);
                 images.Add(image);
+#if DEBUG
+                Cv2.ImWrite(PathHelper.GenerateLocalFile("processed.png"), image);
+#endif
             }
             return images;
         }
 
         public static Mat RemoveHorizontalLines(Mat src,
-            RetrievalModes retrievalMode = RetrievalModes.List,
+            RetrievalModes retrievalMode = RetrievalModes.Tree,
             ContourApproximationModes approxMode = ContourApproximationModes.ApproxNone)
         {
-            // Wide horizontal kernel
-            int horizontalSize = OcrSettings.GetInstance().ColumnProjectionThreshold;
-            Mat horizontalStructure = Cv2.GetStructuringElement(MorphShapes.Rect, new Size(horizontalSize, 1));
-
-            // Detect horizontal candidates
-            Mat detectedLines = new Mat();
-            Cv2.Erode(src, detectedLines, horizontalStructure);
-            Cv2.Dilate(detectedLines, detectedLines, horizontalStructure);
-
             // Find contours of detected lines
-            Cv2.FindContours(detectedLines, out Point[][] contours, out HierarchyIndex[] hierarchy,
+            Cv2.FindContours(src, out Point[][] contours, out HierarchyIndex[] hierarchy,
                              retrievalMode, approxMode);
-#if DEBUG
-            DebugContours(detectedLines, PathHelper.GenerateLocalFile("contours.png"));
-#endif
 
             // Build mask only for the thin line
             Mat mask = Mat.Zeros(src.Size(), MatType.CV_8UC1);
-            foreach (var contour in contours)
+            for (int i = 0; i < contours.Length; i++)
             {
-                Rect rect = Cv2.BoundingRect(contour);
+                Rect rect = Cv2.BoundingRect(contours[i]);
 
-                // Keep only objects with width ~240 px and height ~3 px
+                // Determine hierarchy depth
+                int depth = 0;
+                int parent = hierarchy[i].Parent;
+                while (parent != -1 && depth < 2)
+                {
+                    depth++;
+                    parent = hierarchy[parent].Parent;
+                }
+
                 if (rect.Width >= OcrSettings.GetInstance().MinColumnWidth * 3 && rect.Height <= OcrSettings.GetInstance().LineProjectionThreshold)
                 {
-                    Cv2.DrawContours(mask, new[] { contour }, -1, Scalar.White, -1);
+                    Cv2.DrawContours(mask, new[] { contours[i] }, -1, Scalar.White, -1);
                 }
             }
 
-            int lineRemovalMode = 0;
-
-            if(lineRemovalMode == 0)
-            {
 #if DEBUG
-                Cv2.ImWrite(PathHelper.GenerateLocalFile("detectedLines.png"), mask);
+            Cv2.ImWrite(PathHelper.GenerateLocalFile("detectedLines.png"), mask);
 #endif
-                // Fill the masked area with white directly
-                src.SetTo(Scalar.White, mask);
-                return src;
-            }
-            else if (lineRemovalMode == 1)
-            {
-                Cv2.BitwiseNot(mask, mask);
-#if DEBUG
-                Cv2.ImWrite(PathHelper.GenerateLocalFile("detectedLines.png"), mask);
-#endif
-                Mat result = new Mat();
-                Cv2.BitwiseAnd(src, src, result, mask);
-                return result;
-            }
-            else
-            {
-                // Inpaint to remove the line
-                //Mat result = new Mat();
-                //Cv2.Inpaint(src, mask, result, 3, InpaintMethod.Telea);
-                return null;//This idea is under construction. It has not been finished.
-            }
+            // Fill the masked area with white directly
+            src.SetTo(Scalar.White, mask);
+            return src;
         }
 
 #if DEBUG
-        public static void DebugContours(Mat src, string debugPath,
-            RetrievalModes retrievalMode = RetrievalModes.List,
-            ContourApproximationModes approxMode = ContourApproximationModes.ApproxNone)
+        public static void DebugContoursHierarchy(Mat binaryImage, string debugPath)
         {
-            // src is already binary thresholded
-
-            int horizontalSize = src.Cols / 30;
-            Mat horizontalStructure = Cv2.GetStructuringElement(MorphShapes.Rect, new Size(horizontalSize, 1));
-
-            // Detect horizontal candidates
-            Mat detectedLines = new Mat();
-            Cv2.Erode(src, detectedLines, horizontalStructure);
-            Cv2.Dilate(detectedLines, detectedLines, horizontalStructure);
-
-            // Find contours
-            Cv2.FindContours(detectedLines, out Point[][] contours, out HierarchyIndex[] hierarchy,
-                             retrievalMode, approxMode);
+            // Find contours with hierarchy
+            Cv2.FindContours(binaryImage,
+                out Point[][] contours,
+                out HierarchyIndex[] hierarchy,
+                RetrievalModes.Tree,
+                ContourApproximationModes.ApproxSimple);
 
             // Convert to BGR for colored drawing
             Mat debugImage = new Mat();
-            Cv2.CvtColor(src, debugImage, ColorConversionCodes.GRAY2BGR);
+            Cv2.CvtColor(binaryImage, debugImage, ColorConversionCodes.GRAY2BGR);
 
-            // Draw bounding boxes
-            foreach (var contour in contours)
+            for (int i = 0; i < contours.Length; i++)
             {
-                Rect rect = Cv2.BoundingRect(contour);
-                Cv2.Rectangle(debugImage, rect, new Scalar(0, 0, 255), 2); // red box
+                Rect rect = Cv2.BoundingRect(contours[i]);
+
+                // Determine hierarchy depth
+                int depth = 0;
+                int parent = hierarchy[i].Parent;
+                while (parent != -1)
+                {
+                    depth++;
+                    parent = hierarchy[parent].Parent;
+                }
+
+                // Choose color by depth
+                Scalar color;
+                if (depth == 0)       // parent
+                    color = new Scalar(0, 0, 255);   // red
+                else if (depth == 1)  // child
+                    color = new Scalar(255, 0, 0);   // blue
+                else if (depth == 2)  // grandchild
+                    color = new Scalar(0, 255, 0);   // green
+                else
+                    color = new Scalar(0, 255, 255); // yellow for deeper levels
+
+                Cv2.Rectangle(debugImage, rect, color, 2);
             }
 
-            // Save debug image
             Cv2.ImWrite(debugPath, debugImage);
         }
 
