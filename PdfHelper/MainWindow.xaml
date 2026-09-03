@@ -1,0 +1,80 @@
+﻿<Window x:Class="PdfHelper.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PdfHelper"
+        mc:Ignorable="d"
+        Title="PDF-Helper" Height="600" Width="800"
+        Loaded="Window_Loaded" Unloaded="Window_Unloaded">
+    <StackPanel>
+        <StackPanel Orientation="Horizontal" Margin="20,20,0,0" >
+            <Button x:Name="FolderSelect_Btn"
+                    Click="FolderSelect_Click"
+                    Content="Chọn thư mục"
+                    Height="30" Margin="0,0,0,0" Width="140" FontSize="14"
+                    Background="OrangeRed" Foreground="White" 
+                    IsEnabledChanged="Btn_IsEnabledChanged" />
+            <TextBox x:Name="FolderPathTxb"
+                     Text="{x:Static local:MainWindow.NO_FOLDER_PATH}" Height="30" Margin="20,0,0,0" Width="600" FontSize="14"
+                     GotFocus="PathTxb_GotFocus"
+                     LostFocus="PathTxb_LostFocus"/>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Margin="20,10,0,0" >
+            <TextBlock Height="20" Margin="70,0,0,0" Text="Bao gồm thư mục con:" FontSize="14"/>
+            <CheckBox x:Name="IncludeSubfoldersCkb" Margin="5,0,0,0" VerticalAlignment="Center" />
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Margin="20,20,0,0" >
+            <Button x:Name="FileSelect_Btn"
+                    Click="FileSelect_Click"
+                    Content="Chọn file"
+                    Height="30" Margin="0,0,0,0" Width="140" FontSize="14"
+                    Background="Blue" Foreground="White" HorizontalAlignment="Left"
+                    IsEnabledChanged="Btn_IsEnabledChanged" />
+            <TextBox x:Name="FilePathTxb"
+                     Text="{x:Static local:MainWindow.NO_FILE_PATH}" Height="30" Margin="20,0,0,0" Width="600" FontSize="14"
+                     GotFocus="PathTxb_GotFocus"
+                     LostFocus="PathTxb_LostFocus"/>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Margin="20,30,0,0" >
+            <TextBlock Height="20" Margin="0,0,0,0" Text="Chọn tác vụ:" FontSize="14"/>
+            <ComboBox x:Name="TaskCbb" Height="30" Margin="5,0,0,0" Width="220" FontSize="14">
+                <ComboBoxItem Content="Nhận dạng ký tự (OCR)" x:Name="OCRItem" IsSelected="True"/>
+                <ComboBoxItem Content="Nhận dạng giấy nghỉ phép (NER)" x:Name="NERItem" />
+            </ComboBox>
+            <Button x:Name="StartTask_Btn"
+                    Click="Start_Click"
+                    Content="Thực thi tác vụ"
+                    Height="30" Width="140" FontSize="14" Margin="50,0,0,0"
+                    Background="ForestGreen" Foreground="White"
+                    IsEnabledChanged="Btn_IsEnabledChanged" />
+            <Button x:Name="StopTask_Btn"
+                    Click="Stop_Click"
+                    Content="Ngắt tác vụ"
+                    Height="30" Margin="40,0,0,0" Width="140" FontSize="14"
+                    Background="DarkRed" Foreground="White" HorizontalAlignment="Left"
+                    IsEnabledChanged="Btn_IsEnabledChanged" />
+        </StackPanel>
+        <TextBlock HorizontalAlignment="Left" Height="20" Margin="40,20,0,0" TextWrapping="Wrap" Text="Trạng thái :" FontSize="14"/>
+        <Border BorderBrush="Gray"
+            BorderThickness="1"
+            CornerRadius="4"
+            Padding="5"
+            Width="720"
+            Height="300"
+            Margin="40,0,0,0"
+            HorizontalAlignment="Left">
+            <ScrollViewer x:Name="scrollViewer"
+                  VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled">
+                <TextBlock x:Name="statusLabel"
+                   TextWrapping="Wrap"/>
+            </ScrollViewer>
+        </Border>
+        <StackPanel Orientation="Horizontal" Margin="20,5,0,0" >
+            <TextBlock Height="20" Margin="20,0,0,0" Text="Tự động cuộn trạng thái:" FontSize="14" />
+            <CheckBox x:Name="AutoScrollCkb" Margin="5,0,0,0" VerticalAlignment="Center" IsChecked="True" Checked="AutoScrollCkb_Checked"/>
+            <Button Click="ClearMessage_Click" Content="Xóa trạng thái" Height="30" Margin="50,0,0,0" Width="100" FontSize="14" HorizontalAlignment="Left"/>
+        </StackPanel>
+    </StackPanel>
+</Window>
