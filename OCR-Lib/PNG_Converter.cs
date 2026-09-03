@@ -88,8 +88,8 @@ namespace OCR_Lib
             if (OcrSettings.GetInstance().IsLineRemovalEnabled)
                 image = RemoveHorizontalLines(image);
 #if DEBUG
-            DebugContoursHierarchy(image, PathHelper.GenerateLocalFile("all_contours.png"));
-            Cv2.ImWrite(PathHelper.GenerateLocalFile("processed.png"), image);
+            DebugContoursHierarchy(image, PathHelper.Instance.GenerateLocalFile("all_contours.png"));
+            Cv2.ImWrite(PathHelper.Instance.GenerateLocalFile("processed.png"), image);
 #endif
             return image;
         }
@@ -103,19 +103,45 @@ namespace OCR_Lib
                 Mat image = Cv2.ImDecode(stream.GetBuffer(), ImreadModes.Grayscale);
                 CvThreshold(image);
 #if DEBUG
-                DebugContoursHierarchy(image, PathHelper.GenerateLocalFile("all_contours.png"));
+                DebugContoursHierarchy(image, PathHelper.Instance.GenerateLocalFile("all_contours.png"));
 #endif
                 if (OcrSettings.GetInstance().IsLineRemovalEnabled)
                     image = RemoveHorizontalLines(image);
                 images.Add(image);
 #if DEBUG
-                Cv2.ImWrite(PathHelper.GenerateLocalFile("processed.png"), image);
+                Cv2.ImWrite(PathHelper.Instance.GenerateLocalFile("processed.png"), image);
 #endif
             }
             return images;
         }
 
-        public static Mat RemoveHorizontalLines(Mat src,
+        public static Mat RemoveHorizontalLines(Mat src)
+        {
+            // Invert the image to make lines white on black background
+            using (Mat invertSrc = new Mat())
+            using (Mat detectedLines = new Mat())
+            {
+                Cv2.BitwiseNot(src, invertSrc);
+
+                Mat horizontalStructure = Cv2.GetStructuringElement(MorphShapes.Rect,
+                new Size(OcrSettings.GetInstance().ColumnProjectionThreshold, 1));
+
+                Cv2.Erode(invertSrc, detectedLines, horizontalStructure);
+#if DEBUG
+                Cv2.ImWrite(PathHelper.Instance.GenerateLocalFile("erosion_source.png"), detectedLines);
+#endif
+                Cv2.Dilate(detectedLines, detectedLines, horizontalStructure);
+#if DEBUG
+                Cv2.ImWrite(PathHelper.Instance.GenerateLocalFile("dilation_after_erosion.png"), detectedLines);
+#endif
+                // Fill the masked area with white directly
+                src.SetTo(Scalar.White, detectedLines);
+            }
+            
+            return src;
+        }
+
+        public static Mat RemoveHorizontalLines2(Mat src,
             RetrievalModes retrievalMode = RetrievalModes.Tree,
             ContourApproximationModes approxMode = ContourApproximationModes.ApproxNone)
         {
@@ -145,7 +171,7 @@ namespace OCR_Lib
             }
 
 #if DEBUG
-            Cv2.ImWrite(PathHelper.GenerateLocalFile("detectedLines.png"), mask);
+            Cv2.ImWrite(PathHelper.Instance.GenerateLocalFile("detectedLines.png"), mask);
 #endif
             // Fill the masked area with white directly
             src.SetTo(Scalar.White, mask);

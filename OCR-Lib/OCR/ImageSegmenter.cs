@@ -73,54 +73,55 @@ namespace OCR_Lib
             // For each line, detect columns
             foreach (var (start, end) in lineRegions)
             {
-                Mat lineRegion = gray.RowRange(start, end);
-
-                int[] colSums = new int[lineRegion.Cols];
-                for (int x = 0; x < lineRegion.Cols; x++)
-                    colSums[x] = lineRegion.Col(x).Height - Cv2.CountNonZero(lineRegion.Col(x));
-
-                int rightLine = 0;
-                int leftBorder = -1;
-                bool isBorderWaiting = false;
-                for (int x = 0; x < colSums.Length; x++)
+                using(Mat lineRegion = gray.RowRange(start, end))
                 {
-                    if (colSums[x] > 0)
+                    int[] colSums = new int[lineRegion.Cols];
+                    for (int x = 0; x < lineRegion.Cols; x++)
+                        colSums[x] = lineRegion.Col(x).Height - Cv2.CountNonZero(lineRegion.Col(x));
+
+                    int rightLine = 0;
+                    int leftBorder = -1;
+                    bool isBorderWaiting = false;
+                    for (int x = 0; x < colSums.Length; x++)
                     {
-                        if (isBorderWaiting)
+                        if (colSums[x] > 0)
                         {
-                            isBorderWaiting = false;
-
-                            if (leftBorder < 0)
-                                leftBorder = 0;
-                            else
+                            if (isBorderWaiting)
                             {
-                                int rightBorder = (rightLine + x) / 2;
-                                segments.Add(lineRegion.ColRange(leftBorder, rightBorder).Clone());
-                                leftBorder = rightBorder + 1;
+                                isBorderWaiting = false;
+
+                                if (leftBorder < 0)
+                                    leftBorder = 0;
+                                else
+                                {
+                                    int rightBorder = (rightLine + x) / 2;
+                                    segments.Add(lineRegion.ColRange(leftBorder, rightBorder).Clone());
+                                    leftBorder = rightBorder + 1;
+                                }
                             }
+
+                            rightLine = x;
                         }
-
-                        rightLine = x;
+                        else if (x - rightLine > OcrSettings.GetInstance().ColumnProjectionThreshold)
+                        {
+                            isBorderWaiting = true;
+                        }
                     }
-                    else if (x - rightLine > OcrSettings.GetInstance().ColumnProjectionThreshold)
+
+                    if (leftBorder < 0)
+                        leftBorder = 0;
+
+                    if (lineRegion.Cols > leftBorder)
                     {
-                        isBorderWaiting = true;
+                        segments.Add(lineRegion.ColRange(leftBorder, gray.Cols - 1).Clone());
                     }
-                }
-
-                if (leftBorder < 0)
-                    leftBorder = 0;
-
-                if (lineRegion.Cols > leftBorder)
-                {
-                    segments.Add(lineRegion.ColRange(leftBorder, gray.Cols - 1).Clone());
                 }
             }
 #if DEBUG
             foreach(var seg in segments)
             {
                 // Save each segment to file
-                Cv2.ImWrite(PathHelper.GenerateLocalFile("segment.png"), seg);
+                Cv2.ImWrite(PathHelper.Instance.GenerateLocalFile("segment.png"), seg);
             }
 #endif
             return segments;

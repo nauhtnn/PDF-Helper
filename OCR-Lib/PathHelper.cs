@@ -7,11 +7,61 @@ using System.Threading.Tasks;
 
 namespace OCR_Lib
 {
-    public static class PathHelper
+    public class PathHelper
     {
-        public static string AppName = "Helper";
+        static PathHelper _instance;
 
-        public static string LocalFolder()
+        const int MaxFilesInLocalFolder = 200;
+
+        const int MaxCounterToCheckMaxFiles = 20;
+
+        int _counterToCheckMaxFiles;
+
+        public static PathHelper Instance
+        {
+            get
+            {
+                if (_instance == null)
+                    _instance = new PathHelper();
+                return _instance;
+            }
+        }
+
+        PathHelper()
+        {
+            CleanLocalFolder();
+
+            _counterToCheckMaxFiles = 0;
+        }
+
+        public static readonly string AppName = "Helper";
+
+        void CleanLocalFolder()
+        {
+            string localFolder = LocalFolder();
+            if (!Directory.Exists(localFolder))
+                return;
+
+            var files = Directory.GetFiles(localFolder);
+
+            if(files.Count() <= 200)
+                return;
+
+            files = files.OrderBy(f => new FileInfo(f).CreationTime).ToArray();
+            for(int i = 0; i < files.Length - 200; ++i)
+            {
+                try
+                {
+                    File.Delete(files[i]);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Failed to delete file {files[i]}: {ex.Message}");
+                }
+            }
+        }
+
+        public string LocalFolder()
         {
             string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 
@@ -22,8 +72,16 @@ namespace OCR_Lib
             return localFolder;
         }
 
-        public static string GenerateLocalFile(string fileName)
+        public string GenerateLocalFile(string fileName)
         {
+            _counterToCheckMaxFiles++;
+
+            if(_counterToCheckMaxFiles >= MaxCounterToCheckMaxFiles)
+            {
+                CleanLocalFolder();
+                _counterToCheckMaxFiles = 0;
+            }
+
             string newFilePath = Path.Combine(LocalFolder(), fileName);
 
             if (!File.Exists(newFilePath))
