@@ -76,24 +76,28 @@ namespace OCR_Lib
         {
             _counterToCheckMaxFiles++;
 
-            if(_counterToCheckMaxFiles >= MaxCounterToCheckMaxFiles)
+            if(_counterToCheckMaxFiles > MaxCounterToCheckMaxFiles)
             {
                 CleanLocalFolder();
                 _counterToCheckMaxFiles = 0;
             }
 
-            string newFilePath = Path.Combine(LocalFolder(), fileName);
+            return GenerateFile(fileName, LocalFolder());
+        }
+
+        public string GenerateFile(string fileName, string directory, string postfix = "")
+        {
+            string newFilePath = Path.Combine(directory, fileName);
 
             if (!File.Exists(newFilePath))
                 return newFilePath;
 
-            string localFolder = LocalFolder();
             string baseFileName = Path.GetFileNameWithoutExtension(fileName);
             string extension = Path.GetExtension(fileName);
 
-            for(int i = 0; i < int.MaxValue; ++i)
+            for (int i = 0; i < int.MaxValue; ++i)
             {
-                newFilePath = Path.Combine(LocalFolder(), baseFileName + "-" + i + extension);
+                newFilePath = Path.Combine(directory, baseFileName + "-" + i + postfix + extension);
                 if (!File.Exists(newFilePath))
                     return newFilePath;
             }

@@ -105,12 +105,20 @@ namespace OCR_Lib
                 joinedPageText.Clear();
             }
 
-            int fileIndex = 0;
-            foreach(var fileContent in resultFiles)
+            string saveDirectory = Path.GetDirectoryName(filePath);
+            string saveBaseName = Path.GetFileNameWithoutExtension(filePath) + ".txt";
+            string saveAllFilePath = PathHelper.Instance.GenerateFile(saveBaseName, saveDirectory, "_ALL_OCR");
+            FileStream fileStream = File.OpenWrite(saveAllFilePath);
+            int offset = 0;
+            foreach (var fileContent in resultFiles)
             {
-                var outputFilePath = Path.Combine(Path.GetDirectoryName(filePath), Path.GetFileNameWithoutExtension(filePath) + $"_{++fileIndex}_OCR.txt");
+                var outputFilePath = PathHelper.Instance.GenerateFile(saveBaseName, saveDirectory, "_OCR");
                 File.WriteAllText(outputFilePath, fileContent, System.Text.Encoding.UTF8);
+                byte[] textInBytes = Encoding.UTF8.GetBytes(fileContent);
+                fileStream.Write(textInBytes, offset, textInBytes.Length);
+                offset += textInBytes.Length;
             }
+            fileStream.Close();
 
             StatusMessage.GetInstance().AddMessage($"Hoàn thành đọc file: {filePath}.");
         }
