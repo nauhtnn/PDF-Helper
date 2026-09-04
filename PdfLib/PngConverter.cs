@@ -69,7 +69,10 @@ namespace OcrLib
                     var segments = ImageSegmenter.GetInstance().SegmentByProjection(img);
 
                     foreach (var seg in segments)
+                    {
                         segmentedPage.AddSegment(seg.ToBytes());
+                        seg.Dispose();
+                    }
 
                     segmentedPages.Add(segmentedPage);
                 }
@@ -221,6 +224,8 @@ namespace OcrLib
             }
 
             Cv2.ImWrite(debugPath, debugImage);
+
+            debugImage.Dispose();
         }
 
         public static void Debug_SavePDF_to_PNG_File(string pdfPath, string outputDir)
