@@ -40,6 +40,8 @@ namespace OcrLib
             var pages = PngConverter.LoadFileForOCR(filePath);
             var engine = new TesseractEngine(@"OCR\\", "vie", EngineMode.Default);
             var resultFiles = new List<string>();
+            var resultPageIndexMap = new Dictionary<int, string>();
+            string resultPageIndex = "";
             var pageText = new StringBuilder();
             var joinedPageText = new StringBuilder();
             int pageIndex = 0;
@@ -94,32 +96,63 @@ namespace OcrLib
                     {
                         resultFiles.Add(joinedPageText.ToString());
                         joinedPageText.Clear();
+
+                        resultPageIndexMap.Add(resultFiles.Count - 1, resultPageIndex);
+                        resultPageIndex = "";
                     }
                 }
 
                 joinedPageText.AppendLine(pageText.ToString());
 
-                StatusMessage.Instance.AddMessage($"Nhận dạng ký tự trang {++pageIndex}.");
+                ++pageIndex;
+
+                resultPageIndex += $"-{pageIndex}";
+
+                StatusMessage.Instance.AddMessage($"Nhận dạng ký tự trang {pageIndex}.");
             }
 
             if (joinedPageText.Length > 0)
             {
                 resultFiles.Add(joinedPageText.ToString());
                 joinedPageText.Clear();
+
+                resultPageIndexMap.Add(resultFiles.Count - 1, resultPageIndex);
+                resultPageIndex = "";
             }
 
             string saveDirectory = Path.GetDirectoryName(filePath);
             string saveBaseName = Path.GetFileNameWithoutExtension(filePath) + ".txt";
-            string saveAllFilePath = PathHelper.Instance.GenerateFile(saveBaseName, saveDirectory, "_ALL_OCR");
-            FileStream fileStream = File.OpenWrite(saveAllFilePath);
+            string saveAllBaseName = "";
+            string saveAllFilePath = "";
+            FileStream fileStream = null;
+            int fileIndex = 0;
+            bool saveAllEnabled = resultFiles.Count > 1;
+            if(saveAllEnabled)
+            {
+                saveAllBaseName = Path.GetFileNameWithoutExtension(filePath) + ".txt.all";
+                saveAllFilePath = PathHelper.Instance.GenerateFile(saveAllBaseName, saveDirectory, "_OCR");
+                fileStream = File.OpenWrite(saveAllFilePath);
+            }
+
             foreach (var fileContent in resultFiles)
             {
                 var outputFilePath = PathHelper.Instance.GenerateFile(saveBaseName, saveDirectory, "_OCR");
                 File.WriteAllText(outputFilePath, fileContent, System.Text.Encoding.UTF8);
-                byte[] textInBytes = Encoding.UTF8.GetBytes(fileContent);
-                fileStream.Write(textInBytes, 0, textInBytes.Length);
+
+                if(saveAllEnabled)
+                {
+                    byte[] textInBytes = Encoding.UTF8.GetBytes($"\nTrang {resultPageIndexMap[fileIndex]}: File số {++fileIndex}\n\n");
+                    fileStream.Write(textInBytes, 0, textInBytes.Length);
+
+                    textInBytes = Encoding.UTF8.GetBytes(fileContent);
+                    fileStream.Write(textInBytes, 0, textInBytes.Length);
+                }
             }
-            fileStream.Close();
+
+            if(fileStream != null)
+            {
+                fileStream.Close();
+            }
 
             StatusMessage.Instance.AddMessage($"Hoàn thành đọc file: {filePath}.");
         }
