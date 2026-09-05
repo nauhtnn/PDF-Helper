@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Text.RegularExpressions;
 
-namespace OcrLib
+namespace PdfLib
 {
     public sealed partial class NerLeaveSlip : DocumentProcessor
     {

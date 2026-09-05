@@ -101,16 +101,27 @@
     <Compile Include="LeaveSlip.cs" />
     <Compile Include="NerLeaveSlip.cs" />
     <Compile Include="NerLeaveSlip.Export.cs" />
-    <Compile Include="Ocr\Entities\OcrPageData.cs" />
+    <Compile Include="Ner\Entities\LineFragment.cs" />
+    <Compile Include="Ner\Entities\Paragraph.cs" />
+    <Compile Include="Ner\Rule.cs" />
+    <Compile Include="Ner\RuleEngine.cs" />
+    <Compile Include="Ner\RuleEngineStage.cs" />
+    <Compile Include="Ner\SentenceSplittingStage.cs" />
+    <Compile Include="Ner\TextCleaningStage.cs" />
+    <Compile Include="Ner\Token.cs" />
+    <Compile Include="Ner\TokenizationStage.cs" />
+    <Compile Include="BaseEntity.cs" />
     <Compile Include="Ocr\Entities\OcrPageImage.cs" />
     <Compile Include="Ocr\Entities\OcrPageSegments.cs" />
     <Compile Include="Ocr\ImageSegmenter.cs" />
     <Compile Include="Ocr\OcrSettings.cs" />
     <Compile Include="OcrHelper.cs" />
+    <Compile Include="PipelineStage.cs" />
     <Compile Include="PngConverter.cs" />
     <Compile Include="PredefinedPayroll.cs" />
     <Compile Include="ProcessorFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SimplePipeline.cs" />
     <Compile Include="StatusMessage.cs" />
     <Compile Include="PathHelper.cs" />
     <Compile Include="TextMeasurement.cs" />
@@ -127,6 +138,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

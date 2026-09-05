@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OcrLib
+namespace PdfLib
 {
     public sealed partial class NerLeaveSlip : DocumentProcessor
     {

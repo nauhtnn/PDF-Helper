@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace OcrLib
+namespace PdfLib
 {
     public class ImageSegmenter
     {

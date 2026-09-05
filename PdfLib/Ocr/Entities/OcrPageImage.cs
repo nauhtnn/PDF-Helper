@@ -4,16 +4,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OcrLib
+namespace PdfLib
 {
-    public class OcrPageImage : OcrPageData
+    public class OcrPageImage : BaseEntity
     {
         public byte[] WholeImage { get; set; }
 
         public OcrPageImage(byte[] wholeImage)
+            : base("WholeImage")
         {
-            RepresentationType = "WholeImage";
-
             WholeImage = wholeImage;
         }
     }

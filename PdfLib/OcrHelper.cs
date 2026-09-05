@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using Tesseract;
 
-namespace OcrLib
+namespace PdfLib
 {
     public sealed class OcrHelper : DocumentProcessor
     {

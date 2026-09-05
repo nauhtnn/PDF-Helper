@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text;
 using static System.Net.Mime.MediaTypeNames;
 
-namespace OcrLib
+namespace PdfLib
 {
     internal class PngConverter
     {
@@ -46,7 +46,7 @@ namespace OcrLib
                 Cv2.GaussianBlur(img, img, new Size(5, 5), 0);
         }
 
-        public static List<OcrPageData> LoadFileForOCR(string filePath, bool segment = true)
+        public static List<BaseEntity> LoadFileForOCR(string filePath, bool segment = true)
         {
             List<Mat> images;
             if(filePath.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
@@ -61,7 +61,7 @@ namespace OcrLib
 
             if(segment)
             {
-                var segmentedPages = new List<OcrPageData>();
+                var segmentedPages = new List<BaseEntity>();
                 foreach (var img in images)
                 {
                     var segmentedPage = new OcrPageSegments();
@@ -79,7 +79,7 @@ namespace OcrLib
                 return segmentedPages;
             }
 
-            var page = new List<OcrPageData>();
+            var page = new List<BaseEntity>();
             foreach (var img in images)
                 page.Add(new OcrPageImage(img.ToBytes()));
             return page;

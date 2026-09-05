@@ -4,15 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OcrLib
+namespace PdfLib
 {
-    public class OcrPageSegments : OcrPageData
+    public class OcrPageSegments : BaseEntity
     {
         public List<byte[]> Segments { get; private set; }
         public OcrPageSegments()
+            : base("Segments")
         {
-            RepresentationType = "Segments";
-
             Segments = new List<byte[]>();
         }
 
