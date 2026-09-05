@@ -51,7 +51,7 @@ namespace PdfLib
             return tokens;
         }
 
-        public static bool FuzzyStartWith(string source, string prefix, bool caseSensitive = true)
+        public static bool FuzzyStartsWith(string source, string prefix, bool caseSensitive = true)
         {
             if (string.IsNullOrEmpty(source) || string.IsNullOrEmpty(prefix))
                 return false;

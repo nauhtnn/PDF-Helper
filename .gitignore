@@ -1,7 +1,8 @@
 .vs/
-PdfLib/.vs/
+packages/
 PdfLib/bin/
 PdfLib/obj/
 PdfHelper/bin/
 PdfHelper/obj/
-packages/
+Test/bin/
+Test/obj/

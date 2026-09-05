@@ -1,5 +1,5 @@
 ﻿using Microsoft.Win32;
-using OcrLib;
+using PdfLib;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

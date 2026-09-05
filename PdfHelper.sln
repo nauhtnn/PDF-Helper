@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.14.36414.22
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.37530.7
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PdfLib", "PdfLib\PdfLib.csproj", "{4C5BDBC9-0EFC-4A3E-A6AC-CEF961CB6B57}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PdfHelper", "PdfHelper\PdfHelper.csproj", "{43782117-024F-444F-AF87-0E167276D7DA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{AD0D41C8-91EB-474F-ADD5-3E3082BF430F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,6 +33,14 @@ Global
 		{43782117-024F-444F-AF87-0E167276D7DA}.Release|Any CPU.Build.0 = Release|Any CPU
 		{43782117-024F-444F-AF87-0E167276D7DA}.Release|x64.ActiveCfg = Release|x64
 		{43782117-024F-444F-AF87-0E167276D7DA}.Release|x64.Build.0 = Release|x64
+		{AD0D41C8-91EB-474F-ADD5-3E3082BF430F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD0D41C8-91EB-474F-ADD5-3E3082BF430F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD0D41C8-91EB-474F-ADD5-3E3082BF430F}.Debug|x64.ActiveCfg = Debug|x64
+		{AD0D41C8-91EB-474F-ADD5-3E3082BF430F}.Debug|x64.Build.0 = Debug|x64
+		{AD0D41C8-91EB-474F-ADD5-3E3082BF430F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD0D41C8-91EB-474F-ADD5-3E3082BF430F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AD0D41C8-91EB-474F-ADD5-3E3082BF430F}.Release|x64.ActiveCfg = Release|Any CPU
+		{AD0D41C8-91EB-474F-ADD5-3E3082BF430F}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

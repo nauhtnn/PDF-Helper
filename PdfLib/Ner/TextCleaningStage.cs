@@ -13,6 +13,41 @@ namespace PdfLib
         public TextCleaningStage()
             : base("Text Cleaning", "Cleans and normalizes text") { }
 
+        bool HandlePrefixes(string[] prefixes, string line, StringBuilder paragraph, List<string> paragraphs, bool isSeparatedLineForPrefix)
+        {
+            string lineWithoutPrefix = null;
+            foreach (var prefix in prefixes)
+            {
+                bool found;
+                
+                if (isSeparatedLineForPrefix)
+                    found = string.IsNullOrEmpty(lineWithoutPrefix = TextMeasurement.FuzzryRemovePrefix(line, prefix));
+                else
+                    found = TextMeasurement.FuzzyStartsWith(line, prefix);
+                
+                if (found)
+                {
+                    if (paragraph.Length > 0)
+                    {
+                        paragraphs.Add(paragraph.ToString());
+                        paragraph.Clear();
+                    }
+
+                    if (isSeparatedLineForPrefix)
+                    {
+                        paragraphs.Add(prefix);
+                        paragraphs.Add(lineWithoutPrefix);
+                    }
+                    else
+                        paragraphs.Add(paragraph.ToString());
+
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         public override BaseEntity Execute(BaseEntity input)
         {
             LineFragment textFragment = input as LineFragment;
@@ -36,7 +71,7 @@ namespace PdfLib
                 if (line.Length == 0)
                     continue;
 
-                //new paragraph indicators
+                //indicators for new paragraph
                 if (DocumentTypeMapping.ParseUpperDocumentTypeLine(line) != DocumentType.Unknown)
                 {
                     if (paragraph.Length > 0)
@@ -49,66 +84,48 @@ namespace PdfLib
                     continue;
                 }
 
-                string[] specialStart = { "CONG HOA XA HOI CHU NGHIA VIET NAM",
+                bool isHandled = HandlePrefixes(new string[] { "CONG HOA XA HOI CHU NGHIA VIET NAM",
                     "Doc lap - Tu do - Hanh phuc",
                     "Kinh gui:",
                     "QUYET DINH:",
                     "Noi nhan:",
-                    "Luu:"
-                };
-                string noSpecialStart = null;
-                bool hasSpecialWord = false;
-                foreach (var start in specialStart)
-                {
-                    if ((noSpecialStart = TextMeasurement.FuzzryRemovePrefix(line, start)) != null)
-                    {
-                        if (paragraph.Length > 0)
-                        {
-                            paragraphs.Add(paragraph.ToString());
-                            paragraph.Clear();
-                        }
-                        paragraphs.Add(start);
-                        paragraphs.Add(noSpecialStart);
-                        isNewParagraph = true;
-                        hasSpecialWord = true;
-                        break;
-                    }
-                }
+                    "Luu:" }, line, paragraph, paragraphs,
+                    isSeparatedLineForPrefix : true);
 
-                if(hasSpecialWord)
+                if (isHandled)
                 {
+                    isNewParagraph = true;
+                    continue;
+                }   
+
+                isHandled = HandlePrefixes(new string[] { "KT.", "TL." },
+                    line, paragraph, paragraphs, isSeparatedLineForPrefix : false);
+
+                if (isHandled)
+                {
+                    isNewParagraph = true;
                     continue;
                 }
 
-                specialStart = { "KT.", "TL." };
-
-                string[] specialEnd = { "CONG HOA XA HOI CHU NGHIA VIET NAM",
-                    "Doc lap - Tu do - Hanh phuc",
-                    "Noi nhan:", "Kinh gui:", "KT.", "TL." };
-
-                if ((noSpecialStart = TextMeasurement.FuzzryRemovePrefix(line, "Noi nhan:")) != null)
+                
+                if (!isNewParagraph)
                 {
-                    if (paragraph.Length > 0)
-                    {
-                        paragraphs.Add(paragraph.ToString());
-                        paragraph.Clear();
-                    }
+                    paragraph.Append(" ");
+                }
+
+                paragraph.Append(line);
+
+                //indicator for end of paragraph
+                if(!Regex.IsMatch(line, @"[+\-,\(/\\]$") && Regex.IsMatch(line, @"[^\w\s]$"))
+                {
+                    paragraphs.Add(paragraph.ToString());
+                    paragraph.Clear();
+
                     isNewParagraph = true;
+                    continue;
                 }
-                else
-                {
-                    if (!isNewParagraph)
-                    {
-                        paragraph.Append(" ");
-                    }
 
-                    paragraph.Append(line);
-
-                    if (Regex.IsMatch(line, @"[a-z0-9+\-,;\(/\\]$")) // Example regex for numbered lists
-                    {
-                        isNewParagraph = false;
-                    }
-                }
+                isNewParagraph = false;
             }
 
             return new Paragraph(paragraphs);
