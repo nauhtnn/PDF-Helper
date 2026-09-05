@@ -21,7 +21,7 @@ namespace PdfLib
                 bool found;
                 
                 if (isSeparatedLineForPrefix)
-                    found = string.IsNullOrEmpty(lineWithoutPrefix = TextMeasurement.FuzzryRemovePrefix(line, prefix));
+                    found = !string.IsNullOrEmpty(lineWithoutPrefix = TextMeasurement.FuzzyRemovePrefixOrEmpty(line, prefix));
                 else
                     found = TextMeasurement.FuzzyStartsWith(line, prefix);
                 
@@ -39,7 +39,7 @@ namespace PdfLib
                         paragraphs.Add(lineWithoutPrefix);
                     }
                     else
-                        paragraphs.Add(paragraph.ToString());
+                        paragraphs.Add(line);
 
                     return true;
                 }
@@ -106,7 +106,6 @@ namespace PdfLib
                     isNewParagraph = true;
                     continue;
                 }
-
                 
                 if (!isNewParagraph)
                 {
@@ -116,7 +115,9 @@ namespace PdfLib
                 paragraph.Append(line);
 
                 //indicator for end of paragraph
-                if(!Regex.IsMatch(line, @"[+\-,\(/\\]$") && Regex.IsMatch(line, @"[^\w\s]$"))
+                //line ends with punctuation or is all uppercase
+                if (!Regex.IsMatch(line, @"[+\-,\(/\\]$") && Regex.IsMatch(line, @"[^\w\s]$") ||
+                    line == line.ToUpper())
                 {
                     paragraphs.Add(paragraph.ToString());
                     paragraph.Clear();

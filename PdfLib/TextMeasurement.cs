@@ -55,131 +55,145 @@ namespace PdfLib
         {
             if (string.IsNullOrEmpty(source) || string.IsNullOrEmpty(prefix))
                 return false;
+
             source = RemoveAccent(source);
             prefix = RemoveAccent(prefix);
+            
             if (!caseSensitive)
             {
-                source = source.ToLower();
-                prefix = prefix.ToLower();
+                source = source.ToUpper();
+                prefix = prefix.ToUpper();
             }
+            
             List<string> sourceTokens = FuzzyTokenize(source);
             List<string> prefixTokens = FuzzyTokenize(prefix);
 
-            int sourceIdx = 0;
-            int prefixIdx = 0;
-            while (sourceIdx < sourceTokens.Count && prefixIdx < prefixTokens.Count)
+            if(sourceTokens.Count < prefixTokens.Count)
             {
-                if (sourceTokens[sourceIdx] != prefixTokens[prefixIdx])
-                {
-                    return false;
-                }
-                sourceIdx++;
-                prefixIdx++;
+                return false; // source has fewer tokens than prefix
             }
 
-            if(prefixIdx < prefixTokens.Count)
+            int idx = 0;
+            
+            while (idx < prefixTokens.Count)
             {
-                return false; // prefix has more tokens than source
+                if (sourceTokens[idx] != prefixTokens[idx])
+                    return false;
+
+                idx++;
             }
 
             return true;
         }
 
-        public static string FuzzryRemovePrefix(string source, string prefix, bool caseSensitive = true)
+        // Removes the prefix from the source string if it matches, otherwise returns an empty string.
+        public static string FuzzyRemovePrefixOrEmpty(string source, string prefix, bool caseSensitive = true)
         {
             if (string.IsNullOrEmpty(source) || string.IsNullOrEmpty(prefix))
-                return source;
+                return string.Empty;
+            
             source = RemoveAccent(source);
             prefix = RemoveAccent(prefix);
+            
             if (!caseSensitive)
             {
-                source = source.ToLower();
-                prefix = prefix.ToLower();
+                source = source.ToUpper();
+                prefix = prefix.ToUpper();
             }
+            
             List<string> sourceTokens = FuzzyTokenize(source);
             List<string> prefixTokens = FuzzyTokenize(prefix);
-            int sourceIdx = 0;
-            int prefixIdx = 0;
-            while (sourceIdx < sourceTokens.Count && prefixIdx < prefixTokens.Count)
+
+            if(sourceTokens.Count < prefixTokens.Count)
             {
-                if (sourceTokens[sourceIdx] != prefixTokens[prefixIdx])
-                {
-                    break;
-                }
-                sourceIdx++;
-                prefixIdx++;
-            }
-            if (prefixIdx < prefixTokens.Count)
-            {
-                return string.Empty; // prefix has more tokens than source
+                return string.Empty; // source has fewer tokens than prefix
             }
 
-            return string.Join(" ", sourceTokens.Skip(sourceIdx));
+            int idx = 0;
+
+            while (idx < prefixTokens.Count)
+            {
+                if (sourceTokens[idx] != prefixTokens[idx])
+                    return string.Empty; // mismatch found
+
+                idx++;
+            }
+
+            return string.Join(" ", sourceTokens.Skip(idx));
         }
 
         public static bool FuzzyEndsWith(string source, string suffix, bool caseSensitive = true)
         {
             if (string.IsNullOrEmpty(source) || string.IsNullOrEmpty(suffix))
                 return false;
+            
             source = RemoveAccent(source);
             suffix = RemoveAccent(suffix);
+            
             if (!caseSensitive)
             {
-                source = source.ToLower();
-                suffix = suffix.ToLower();
+                source = source.ToUpper();
+                suffix = suffix.ToUpper();
             }
 
             List<string> sourceTokens = FuzzyTokenize(source);
             List<string> suffixTokens = FuzzyTokenize(suffix);
 
-            int sourceIdx = sourceTokens.Count - 1;
-            int suffixIdx = suffixTokens.Count - 1;
-            while (sourceIdx >= 0 && suffixIdx >= 0)
+            if(sourceTokens.Count < suffixTokens.Count)
             {
-                if (sourceTokens[sourceIdx] != suffixTokens[suffixIdx])
-                {
-                    return false;
-                }
-                sourceIdx--;
-                suffixIdx--;
+                return false; // source has fewer tokens than suffix
             }
 
-            if (suffixIdx >= 0)
+            int sourceIdx = sourceTokens.Count - 1;
+            int suffixIdx = suffixTokens.Count - 1;
+            
+            while (suffixIdx >= 0)
             {
-                return false; // suffix has more tokens than source
+                if (sourceTokens[sourceIdx] != suffixTokens[suffixIdx])
+                    return false;
+                
+                sourceIdx--;
+                suffixIdx--;
             }
 
             return true;
         }
 
-        public static string FuzzyRemoveSuffix(string source, string suffix, bool caseSensitive = true)
+        // Removes the suffix from the source string if it matches, otherwise returns an empty string.
+        public static string FuzzyRemoveSuffixOrEmpty(string source, string suffix, bool caseSensitive = true)
         {
             if (string.IsNullOrEmpty(source) || string.IsNullOrEmpty(suffix))
-                return source;
+                return string.Empty;
+            
             source = RemoveAccent(source);
             suffix = RemoveAccent(suffix);
+            
             if (!caseSensitive)
             {
-                source = source.ToLower();
-                suffix = suffix.ToLower();
+                source = source.ToUpper();
+                suffix = suffix.ToUpper();
             }
+            
             List<string> sourceTokens = FuzzyTokenize(source);
             List<string> suffixTokens = FuzzyTokenize(suffix);
+
+            if(sourceTokens.Count < suffixTokens.Count)
+            {
+                return string.Empty; // source has fewer tokens than suffix
+            }
+
             int sourceIdx = sourceTokens.Count - 1;
             int suffixIdx = suffixTokens.Count - 1;
-            while (sourceIdx >= 0 && suffixIdx >= 0)
+                        
+            while (suffixIdx >= 0)
             {
                 if (sourceTokens[sourceIdx] != suffixTokens[suffixIdx])
-                {
-                    break;
-                }
+                    return string.Empty; // mismatch found
+
                 sourceIdx--;
                 suffixIdx--;
             }
-            if (suffixIdx >= 0)
-            {
-                return string.Empty; // suffix has more tokens than source
-            }
+
             return string.Join(" ", sourceTokens.Take(sourceIdx + 1));
         }
     }

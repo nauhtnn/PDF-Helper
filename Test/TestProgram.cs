@@ -26,7 +26,7 @@ namespace Test
 
             foreach(var p in paragraphs.Paragraphs)
             {
-                byte[] textInBytes = Encoding.UTF8.GetBytes(p);
+                byte[] textInBytes = Encoding.UTF8.GetBytes(p + "\n");
                 fileStream.Write(textInBytes, 0, textInBytes.Length);
             }
 
