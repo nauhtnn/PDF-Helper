@@ -77,7 +77,7 @@ namespace PdfLib
             sb.AppendLine("Số ngày nghỉ: " + NumberOfLeaveDays);
             sb.AppendLine("Các ngày khác: " + string.Join(", ", UndefinedDates));
             sb.AppendLine("Tên người xin nghỉ phép: " + EmployeeName);
-            sb.AppendLine("Tên cấp trên: " + BossName);
+            sb.AppendLine("Chữ ký lãnh đạo: " + BossName);
             return sb.ToString();
         }
     }

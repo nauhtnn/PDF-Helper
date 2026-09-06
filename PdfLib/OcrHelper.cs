@@ -87,7 +87,7 @@ namespace PdfLib
             bool saveAllEnabled = textOfPages.Count > 0;
             if(saveAllEnabled)
             {
-                saveAllBaseName = Path.GetFileNameWithoutExtension(filePath) + ".txt.all";
+                saveAllBaseName = Path.GetFileNameWithoutExtension(filePath) + ".txt";
                 saveAllFilePath = PathHelper.Instance.GenerateFile(saveAllBaseName, saveDirectory, "_OCR");
                 fileStream = File.OpenWrite(saveAllFilePath);
             }
