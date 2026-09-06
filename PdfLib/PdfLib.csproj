@@ -101,12 +101,15 @@
     <Compile Include="LeaveSlip.cs" />
     <Compile Include="NerLeaveSlip.cs" />
     <Compile Include="NerLeaveSlip.Export.cs" />
+    <Compile Include="Ner\Entities\DocumentList.cs" />
+    <Compile Include="Ner\Entities\StringPair.cs" />
     <Compile Include="Ner\Entities\LineFragment.cs" />
-    <Compile Include="Ner\Entities\Paragraph.cs" />
+    <Compile Include="Ner\Entities\Document.cs" />
+    <Compile Include="Ner\Entities\Page.cs" />
     <Compile Include="Ner\Entities\Sentence.cs" />
     <Compile Include="Ner\Rule.cs" />
     <Compile Include="Ner\RuleEngine.cs" />
-    <Compile Include="Ner\RuleEngineStage.cs" />
+    <Compile Include="Ner\LeaveSlipRuleStage.cs" />
     <Compile Include="Ner\SentenceSplittingStage.cs" />
     <Compile Include="Ner\TextCleaningStage.cs" />
     <Compile Include="Ner\Token.cs" />

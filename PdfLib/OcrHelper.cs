@@ -39,11 +39,8 @@ namespace PdfLib
 
             var pages = PngConverter.LoadFileForOCR(filePath);
             var engine = new TesseractEngine(@"OCR\\", "vie", EngineMode.Default);
-            var resultFiles = new List<string>();
-            var resultPageIndexMap = new Dictionary<int, string>();
-            string resultPageIndex = "";
+            var textOfPages = new List<string>();
             var pageText = new StringBuilder();
-            var joinedPageText = new StringBuilder();
             int pageIndex = 0;
             foreach (var page in pages)
             {
@@ -76,48 +73,9 @@ namespace PdfLib
                     }
                 }
 
-                string[] lines = pageText.ToString().Split(new[] { '\n' });
+                textOfPages.Add(pageText.ToString());
 
-                var docType = DocumentType.Unknown;
-
-                foreach (var line in lines)
-                {
-                    var detectedType = DocumentTypeMapping.ParseUpperDocumentTypeLine(line);
-                    if (detectedType != DocumentType.Unknown)
-                    {
-                        docType = detectedType;
-                        break;
-                    }
-                }
-
-                if (docType != DocumentType.Unknown)
-                {
-                    if (joinedPageText.Length > 0)
-                    {
-                        resultFiles.Add(joinedPageText.ToString());
-                        joinedPageText.Clear();
-
-                        resultPageIndexMap.Add(resultFiles.Count - 1, resultPageIndex);
-                        resultPageIndex = "";
-                    }
-                }
-
-                joinedPageText.AppendLine(pageText.ToString());
-
-                ++pageIndex;
-
-                resultPageIndex += $"-{pageIndex}";
-
-                StatusMessage.Instance.AddMessage($"Nhận dạng ký tự trang {pageIndex}.");
-            }
-
-            if (joinedPageText.Length > 0)
-            {
-                resultFiles.Add(joinedPageText.ToString());
-                joinedPageText.Clear();
-
-                resultPageIndexMap.Add(resultFiles.Count - 1, resultPageIndex);
-                resultPageIndex = "";
+                StatusMessage.Instance.AddMessage($"Nhận dạng ký tự trang {++pageIndex}.");
             }
 
             string saveDirectory = Path.GetDirectoryName(filePath);
@@ -125,8 +83,8 @@ namespace PdfLib
             string saveAllBaseName = "";
             string saveAllFilePath = "";
             FileStream fileStream = null;
-            int fileIndex = 0;
-            bool saveAllEnabled = resultFiles.Count > 1;
+            pageIndex = 0;
+            bool saveAllEnabled = textOfPages.Count > 0;
             if(saveAllEnabled)
             {
                 saveAllBaseName = Path.GetFileNameWithoutExtension(filePath) + ".txt.all";
@@ -134,15 +92,15 @@ namespace PdfLib
                 fileStream = File.OpenWrite(saveAllFilePath);
             }
 
-            foreach (var fileContent in resultFiles)
+            foreach (var fileContent in textOfPages)
             {
-                var outputFilePath = PathHelper.Instance.GenerateFile(saveBaseName, saveDirectory, "_OCR");
-                File.WriteAllText(outputFilePath, fileContent, System.Text.Encoding.UTF8);
+                //var outputFilePath = PathHelper.Instance.GenerateFile(saveBaseName, saveDirectory, "_OCR");
+                //File.WriteAllText(outputFilePath, fileContent, System.Text.Encoding.UTF8);
 
                 if(saveAllEnabled)
                 {
                     // Write page index and file index (ALL IS UPPPERCASED) to the combined file
-                    byte[] textInBytes = Encoding.UTF8.GetBytes($"\n<TRANG {resultPageIndexMap[fileIndex]}: FILE SỐ {++fileIndex} />\n\n");
+                    byte[] textInBytes = Encoding.UTF8.GetBytes($"\n<TRANG {++pageIndex} />\n\n");
                     fileStream.Write(textInBytes, 0, textInBytes.Length);
 
                     textInBytes = Encoding.UTF8.GetBytes(fileContent);

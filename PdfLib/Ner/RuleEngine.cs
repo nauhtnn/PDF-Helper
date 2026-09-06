@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PdfLib.Ner
+namespace PdfLib
 {
     // Rule engine to manage and apply rules
     public class RuleEngine
@@ -16,13 +16,13 @@ namespace PdfLib.Ner
             rules.Add(rule);
         }
 
-        public void ApplyRules(IEnumerable<Token> tokens)
+        public void ApplyRules(List<Document> documents)
         {
-            foreach (var token in tokens)
+            foreach (var document in documents)
             {
                 foreach (var rule in rules)
                 {
-                    rule.Apply(token);
+                    rule.Apply(document);
                 }
             }
         }

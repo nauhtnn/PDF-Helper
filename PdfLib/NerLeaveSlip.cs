@@ -99,8 +99,6 @@ namespace PdfLib
 
             LeaveSlip leaveSlip = new LeaveSlip();
 
-            leaveSlip.FilePath = filePath;
-
             foreach (string sentence in documentInfo.Sentences)
             {
                 MatchCollection dates = Regex.Matches(sentence, @"\b\d{1,2}(/|-|\.)\d{1,2}(/|-|\.)\d{4}\b");
@@ -148,7 +146,7 @@ namespace PdfLib
                 List<string> employeeNames = PredefinedPayroll.GetInstance().GetOccurrences(sentence);
                 if(employeeNames.Count > 0)
                 {
-                    leaveSlip.AddEmployeeNames(employeeNames);
+                    leaveSlip.AddEmployeeName(employeeNames[0]);
                 }
             }
 

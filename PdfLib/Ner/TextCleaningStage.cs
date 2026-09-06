@@ -1,5 +1,4 @@
-﻿using PdfLib.Ner;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -59,12 +58,19 @@ namespace PdfLib
                 throw new ArgumentException("Input must be of type LineFragment", nameof(input));
             }
 
-            List<string> paragraphs = new List<string>();
-
             StringBuilder paragraph = new StringBuilder();
 
-            int i = 0;
+            List<Page> pages = new List<Page>();
+            pages.Add(new Page());
+
+            List<Document> documents = new List<Document>();
+
             bool isNewParagraph = true;
+
+            bool hasDocuumentTitle = false;
+
+            int i = 0;
+            
             while (i < lineFragment.Lines.Length)
             {
                 string line = lineFragment.Lines[i].Trim();
@@ -73,34 +79,72 @@ namespace PdfLib
                 if (line.Length == 0)
                     continue;
 
+                if(Regex.IsMatch(line, @"<TRANG \d+ />"))
+                {
+                    if(paragraph.Length > 0)
+                    {
+                        pages.Last().Paragraphs.Add(paragraph.ToString());
+                        paragraph.Clear();
+                    }
+
+                    if(hasDocuumentTitle)
+                    {
+                        Document doc = new Document();
+                        foreach (var page in pages)
+                            doc.TextBlock.AddRange(page.Paragraphs);
+                        if (doc.TextBlock.Count > 0)
+                            documents.Add(doc);
+
+                        pages = new List<Page>();
+                        hasDocuumentTitle = false;
+                    }
+
+                    pages.Add(new Page());
+                    pages.Last().Paragraphs.Add(line);
+                    isNewParagraph = true;
+
+                    continue;
+                }
+
                 //indicators for new paragraph
                 if (DocumentTypeMapping.ParseUpperDocumentTypeLine(line) != DocumentType.Unknown)
                 {
+                    hasDocuumentTitle = true;
+
                     if (paragraph.Length > 0)
                     {
-                        paragraphs.Add(paragraph.ToString());
+                        pages.Last().Paragraphs.Add(paragraph.ToString());
                         paragraph.Clear();
                     }
-                    paragraphs.Add(line);
+                    pages.Last().Paragraphs.Add(line);
                     isNewParagraph = true;
                     continue;
                 }
 
                 bool isHandled = HandlePrefixes(new string[] { "CONG HOA XA HOI CHU NGHIA VIET NAM",
                     "Doc lap - Tu do - Hanh phuc",
-                    "Kinh gui:",
-                    "QUYET DINH:",
-                    "Noi nhan:"}, line, paragraph, paragraphs,
+                    "Kinh gui:" }, line, paragraph, pages.Last().Paragraphs,
                     isSeparatedLineForPrefix : true);
+
+                if (isHandled)
+                {
+                    hasDocuumentTitle = true;
+                    isNewParagraph = true;
+                    continue;
+                }
+
+                isHandled = HandlePrefixes(new string[] { "QUYET DINH:", "Noi nhan:" },
+                    line, paragraph, pages.Last().Paragraphs,
+                    isSeparatedLineForPrefix: true);
 
                 if (isHandled)
                 {
                     isNewParagraph = true;
                     continue;
-                }   
+                }
 
                 isHandled = HandlePrefixes(new string[] { "KT.", "TL." },
-                    line, paragraph, paragraphs, isSeparatedLineForPrefix : false);
+                    line, paragraph, pages.Last().Paragraphs, isSeparatedLineForPrefix : false);
 
                 if (isHandled)
                 {
@@ -113,10 +157,10 @@ namespace PdfLib
                 {
                     if (paragraph.Length > 0)
                     {
-                        paragraphs.Add(paragraph.ToString());
+                        pages.Last().Paragraphs.Add(paragraph.ToString());
                         paragraph.Clear();
                     }
-                    paragraphs.Add(line);
+                    pages.Last().Paragraphs.Add(line);
                     isNewParagraph = true;
                     continue;
                 }
@@ -134,7 +178,7 @@ namespace PdfLib
                 //line ends with punctuation except for +, -, , ( , /, \
                 if (!Regex.IsMatch(line, @"[+\-,\(/\\]$") && Regex.IsMatch(line, @"[^\w\s]$"))
                 {
-                    paragraphs.Add(paragraph.ToString());
+                    pages.Last().Paragraphs.Add(paragraph.ToString());
                     paragraph.Clear();
 
                     isNewParagraph = true;
@@ -144,7 +188,17 @@ namespace PdfLib
                 isNewParagraph = false;
             }
 
-            return new Paragraph(paragraphs);
+            //add any remaining paragraph
+            if (paragraph.Length > 0)
+                pages.Last().Paragraphs.Add(paragraph.ToString());
+
+            Document lastDoc = new Document();
+            foreach (var page in pages)
+                lastDoc.TextBlock.AddRange(page.Paragraphs);
+            if (lastDoc.TextBlock.Count > 0)
+                documents.Add(lastDoc);
+
+            return new DocumentList(documents);
         }
     }
 }

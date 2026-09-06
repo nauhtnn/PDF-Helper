@@ -14,41 +14,48 @@ namespace PdfLib
 
         public override BaseEntity Execute(BaseEntity input)
         {
-            Paragraph paragraphs = input as Paragraph;
+            DocumentList documents = input as DocumentList;
 
-            if (paragraphs == null)
+            if (documents == null)
             {
-                throw new ArgumentException("Input must be of type Paragraph", nameof(input));
+                throw new ArgumentException("Input must be of type DocumentList", nameof(input));
             }
 
-            List<string> sentences = new List<string>();
-
-            foreach (string paragraph in paragraphs.Paragraphs)
+            foreach (Document document in documents.Documents)
             {
-                string pattern = @"\b(KT\.|TL\.) (?=[A-Z])";
+                // Initialize a new list to hold the sentences for the current document
+                List<string> sentences = new List<string>();
 
-                // Replace with escaped version: <Mr_>, <Mrs_>, etc.
-                string escapedParagraph = Regex.Replace(paragraph, pattern, m =>
+                foreach (string paragraph in document.TextBlock)
                 {
-                    string word = m.Groups[1].Value.Replace(".", "_");
-                    return $"<{word}> ";
-                });
+                    // Escape KT. and TL. when followed by a capital letter)
+                    string pattern = @"\b(KT\.|TL\.) (?=[A-Z])";
 
-                //no colon, semicolon in the split delimiters
-                var rawSentence = escapedParagraph.Split(new[] { "./.", "...", "..", ".", "!", "?" }, StringSplitOptions.RemoveEmptyEntries);
-
-                foreach (var sentence in rawSentence)
-                {
-                    string trimmedSentence = sentence.Trim();
-                    if (!string.IsNullOrEmpty(trimmedSentence))
+                    // Replace with escaped version: <Mr_>, <Mrs_>, etc.
+                    string escapedParagraph = Regex.Replace(paragraph, pattern, m =>
                     {
-                        trimmedSentence = trimmedSentence.Replace("<KT_>", "KT.").Replace("<TL_>", "TL.");
-                        sentences.Add(trimmedSentence);
+                        string word = m.Groups[1].Value.Replace(".", "_");
+                        return $"<{word}> ";
+                    });
+
+                    //no colon, semicolon in the split delimiters
+                    var rawSentence = escapedParagraph.Split(new[] { "./.", "...", "..", ".", "!", "?" }, StringSplitOptions.RemoveEmptyEntries);
+
+                    foreach (var sentence in rawSentence)
+                    {
+                        string trimmedSentence = sentence.Trim();
+                        if (!string.IsNullOrEmpty(trimmedSentence))
+                        {
+                            trimmedSentence = trimmedSentence.Replace("<KT_>", "KT.").Replace("<TL_>", "TL.");
+                            sentences.Add(trimmedSentence);
+                        }
                     }
                 }
+
+                document.TextBlock = sentences;
             }
 
-            return new Sentence(sentences);
+            return input;
         }
     }
 }

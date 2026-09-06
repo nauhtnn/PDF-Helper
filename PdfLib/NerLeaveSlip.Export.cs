@@ -75,8 +75,8 @@ namespace PdfLib
                     CreateTextCell(slip.EndLeaveDate),
                     CreateTextCell(string.Join(", ", slip.UndefinedDates ?? new List<string>())),
                     CreateNumberCell(slip.NumberOfLeaveDays),
-                    CreateTextCell(string.Join(", ", slip.EmployeeNames ?? new List<string>())),
-                    CreateTextCell(slip.FilePath)
+                    CreateTextCell(slip.EmployeeName),
+                    CreateTextCell(slip.BossName)
                 );
 
                 sheetData.Append(row);

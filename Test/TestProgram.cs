@@ -20,15 +20,37 @@ namespace Test
 
             LineFragment fragment = new LineFragment(File.ReadAllLines(filePath));
 
-            Paragraph paragraphs = stage.Execute(fragment) as Paragraph;
+            DocumentList documents = stage.Execute(fragment) as DocumentList;
 
             SentenceSplittingStage x = new SentenceSplittingStage();
-            Sentence sentences = x.Execute(paragraphs) as Sentence;
+            x.Execute(documents);
 
             FileStream fileStream = File.OpenWrite("test.txt");
 
-            foreach(var p in sentences.Sentences)
+            /*int docIndex = 0;
+
+            foreach (var d in documents.Documents)
             {
+                docIndex++;
+                byte[] textInBytes = Encoding.UTF8.GetBytes("\n<DOCUMENT " + docIndex + " />\n");
+                fileStream.Write(textInBytes, 0, textInBytes.Length);
+
+                foreach (var p in d.TextBlock)
+                {
+                    textInBytes = Encoding.UTF8.GetBytes(p + "\n");
+                    fileStream.Write(textInBytes, 0, textInBytes.Length);
+                }
+            }*/
+
+            LeaveSlipRuleStage leaveSlipRuleStage = new LeaveSlipRuleStage();
+
+            leaveSlipRuleStage.ResetDefaults();
+            DocumentList leaveSlips = leaveSlipRuleStage.Execute(documents) as DocumentList;
+
+            foreach(var d in leaveSlips.Documents)
+            {
+                LeaveSlip leaveSlip = d as LeaveSlip;
+                string p = leaveSlip.ToString();
                 byte[] textInBytes = Encoding.UTF8.GetBytes(p + "\n");
                 fileStream.Write(textInBytes, 0, textInBytes.Length);
             }
