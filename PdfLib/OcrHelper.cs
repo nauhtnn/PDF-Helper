@@ -141,8 +141,8 @@ namespace PdfLib
 
                 if(saveAllEnabled)
                 {
-                    // Write page index and file index (ALL UPPPERCASED) to the combined file
-                    byte[] textInBytes = Encoding.UTF8.GetBytes($"\nTRANG {resultPageIndexMap[fileIndex]}: FILE SỐ {++fileIndex}\n\n");
+                    // Write page index and file index (ALL IS UPPPERCASED) to the combined file
+                    byte[] textInBytes = Encoding.UTF8.GetBytes($"\n<TRANG {resultPageIndexMap[fileIndex]}: FILE SỐ {++fileIndex} />\n\n");
                     fileStream.Write(textInBytes, 0, textInBytes.Length);
 
                     textInBytes = Encoding.UTF8.GetBytes(fileContent);

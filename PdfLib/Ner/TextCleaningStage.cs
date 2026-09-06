@@ -15,13 +15,14 @@ namespace PdfLib
 
         bool HandlePrefixes(string[] prefixes, string line, StringBuilder paragraph, List<string> paragraphs, bool isSeparatedLineForPrefix)
         {
-            string lineWithoutPrefix = null;
             foreach (var prefix in prefixes)
             {
+                string removed = null;
+                string remaining = null;
                 bool found;
                 
                 if (isSeparatedLineForPrefix)
-                    found = !string.IsNullOrEmpty(lineWithoutPrefix = TextMeasurement.FuzzyRemovePrefixOrEmpty(line, prefix));
+                    found = TextMeasurement.FuzzyRemovePrefix(line, prefix, out removed, out remaining);
                 else
                     found = TextMeasurement.FuzzyStartsWith(line, prefix);
                 
@@ -35,8 +36,9 @@ namespace PdfLib
 
                     if (isSeparatedLineForPrefix)
                     {
-                        paragraphs.Add(prefix);
-                        paragraphs.Add(lineWithoutPrefix);
+                        paragraphs.Add(removed);
+                        if(!string.IsNullOrEmpty(remaining))
+                            paragraphs.Add(remaining);
                     }
                     else
                         paragraphs.Add(line);
@@ -88,8 +90,7 @@ namespace PdfLib
                     "Doc lap - Tu do - Hanh phuc",
                     "Kinh gui:",
                     "QUYET DINH:",
-                    "Noi nhan:",
-                    "Luu:" }, line, paragraph, paragraphs,
+                    "Noi nhan:"}, line, paragraph, paragraphs,
                     isSeparatedLineForPrefix : true);
 
                 if (isHandled)
@@ -106,7 +107,22 @@ namespace PdfLib
                     isNewParagraph = true;
                     continue;
                 }
-                
+
+                //line is all uppercase, contains at least one letter
+                if (line == line.ToUpper() && Regex.IsMatch(line, @"\p{L}"))
+                {
+                    if (paragraph.Length > 0)
+                    {
+                        paragraphs.Add(paragraph.ToString());
+                        paragraph.Clear();
+                    }
+                    paragraphs.Add(line);
+                    isNewParagraph = true;
+                    continue;
+                }
+
+                //no indicators for new paragraph, append to current paragraph
+
                 if (!isNewParagraph)
                 {
                     paragraph.Append(" ");
@@ -114,10 +130,9 @@ namespace PdfLib
 
                 paragraph.Append(line);
 
-                //indicator for end of paragraph
-                //line ends with punctuation or is all uppercase
-                if (!Regex.IsMatch(line, @"[+\-,\(/\\]$") && Regex.IsMatch(line, @"[^\w\s]$") ||
-                    line == line.ToUpper())
+                //indicators for end of paragraph
+                //line ends with punctuation except for +, -, , ( , /, \
+                if (!Regex.IsMatch(line, @"[+\-,\(/\\]$") && Regex.IsMatch(line, @"[^\w\s]$"))
                 {
                     paragraphs.Add(paragraph.ToString());
                     paragraph.Clear();
