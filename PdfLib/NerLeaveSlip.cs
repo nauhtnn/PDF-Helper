@@ -113,7 +113,7 @@ namespace PdfLib
                         {
                             for(int i = 1; i < dates.Count; i++)
                             {
-                                leaveSlip.AddUndefinedDate(dates[i].Value);
+                                leaveSlip.UndefinedDates.Add(dates[i].Value);
                             }
                         }
                     }
@@ -128,7 +128,7 @@ namespace PdfLib
                         {
                             for (int i = 2; i < dates.Count; i++)
                             {
-                                leaveSlip.AddUndefinedDate(dates[i].Value);
+                                leaveSlip.UndefinedDates.Add(dates[i].Value);
                             }
                         }
 
@@ -138,7 +138,7 @@ namespace PdfLib
                     {
                         foreach (Match date in dates)
                         {
-                            leaveSlip.AddUndefinedDate(date.Value);
+                            leaveSlip.UndefinedDates.Add(date.Value);
                         }
                     }
                 }
@@ -146,7 +146,7 @@ namespace PdfLib
                 List<string> employeeNames = PredefinedPayroll.GetInstance().GetOccurrences(sentence);
                 if(employeeNames.Count > 0)
                 {
-                    leaveSlip.AddEmployeeName(employeeNames[0]);
+                    leaveSlip.EmployeeName = employeeNames[0];
                 }
             }
 

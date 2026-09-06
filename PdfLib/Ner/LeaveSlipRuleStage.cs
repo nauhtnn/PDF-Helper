@@ -142,10 +142,16 @@ namespace PdfLib
             foreach (var document in documents.Documents)
             {
                 LeaveSlip leaveSlip = new LeaveSlip(document);
-                foreach (var rule in Rules)
+
+                if(leaveSlip.DocTypes.Count == 1 &&
+                    leaveSlip.DocTypes[0] == DocumentType.LeaveSlip)
                 {
-                    rule.Apply(leaveSlip);
+                    foreach (var rule in Rules)
+                    {
+                        rule.Apply(leaveSlip);
+                    }
                 }
+                
                 leaveSlips.Documents.Add(leaveSlip);
             }
 

@@ -67,10 +67,12 @@ namespace PdfLib
 
             bool isNewParagraph = true;
 
-            bool hasDocuumentTitle = false;
+            bool hasDocumentTitle = false;
 
             int i = 0;
-            
+
+            List<DocumentType> docTypes = new List<DocumentType>();
+
             while (i < lineFragment.Lines.Length)
             {
                 string line = lineFragment.Lines[i].Trim();
@@ -87,16 +89,23 @@ namespace PdfLib
                         paragraph.Clear();
                     }
 
-                    if(hasDocuumentTitle)
+                    if(hasDocumentTitle)
                     {
                         Document doc = new Document();
+
+                        if(docTypes.Count > 0)
+                        {
+                            doc.DocTypes = docTypes;
+                            docTypes = new List<DocumentType>();
+                        }
+                        
                         foreach (var page in pages)
                             doc.TextBlock.AddRange(page.Paragraphs);
                         if (doc.TextBlock.Count > 0)
                             documents.Add(doc);
 
                         pages = new List<Page>();
-                        hasDocuumentTitle = false;
+                        hasDocumentTitle = false;
                     }
 
                     pages.Add(new Page());
@@ -107,9 +116,12 @@ namespace PdfLib
                 }
 
                 //indicators for new paragraph
-                if (DocumentTypeMapping.ParseUpperDocumentTypeLine(line) != DocumentType.Unknown)
+                DocumentType docType = DocumentTypeMapping.ParseUpperDocumentTypeLine(line);
+                if (docType != DocumentType.Unknown)
                 {
-                    hasDocuumentTitle = true;
+                    hasDocumentTitle = true;
+
+                    docTypes.Add(docType);
 
                     if (paragraph.Length > 0)
                     {
@@ -128,7 +140,7 @@ namespace PdfLib
 
                 if (isHandled)
                 {
-                    hasDocuumentTitle = true;
+                    hasDocumentTitle = true;
                     isNewParagraph = true;
                     continue;
                 }
@@ -193,6 +205,11 @@ namespace PdfLib
                 pages.Last().Paragraphs.Add(paragraph.ToString());
 
             Document lastDoc = new Document();
+            if(docTypes.Count > 0)
+            {
+                lastDoc.DocTypes = docTypes;
+                docTypes = new List<DocumentType>();
+            }
             foreach (var page in pages)
                 lastDoc.TextBlock.AddRange(page.Paragraphs);
             if (lastDoc.TextBlock.Count > 0)

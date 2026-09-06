@@ -26,7 +26,7 @@ namespace PdfLib
             Init();
         }
 
-        public LeaveSlip(Document doc) : base()
+        public LeaveSlip(Document doc) : base(doc)
         {
             Init();
             if (doc != null)
@@ -48,25 +48,27 @@ namespace PdfLib
             NumberOfLeaveDays = 0;
         }
 
-        public void AddUndefinedDate(string date)
-        {
-            UndefinedDates.Add(date);
-        }
-
-        public void AddEmployeeName(string name)
-        {
-            EmployeeName = name;
-        }
-
-        public void AddBossName(string name)
-        {
-            BossName = name;
-        }
-
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine("Giấy nghỉ phép:");
+            StringBuilder docTypes = new StringBuilder();
+            docTypes.Append("Loại văn bản: ");
+            if(DocTypes.Count > 0)
+            {
+                for (int i = 0; i < DocTypes.Count; i++)
+                {
+                    docTypes.Append(DocumentTypeMapping.SentenceCase[DocTypes[i]]);
+                    if (i < DocTypes.Count - 1)
+                    {
+                        docTypes.Append(", ");
+                    }
+                }
+            }
+            else
+            {
+                docTypes.Append("Không xác định");
+            }
+            sb.AppendLine(docTypes.ToString());
             sb.AppendLine("Số: " + RegNumber);
             sb.AppendLine("Ngày ban hành: " + PublishedDate);
             sb.AppendLine("Ngày nộp đơn: " + CommittingDate);
