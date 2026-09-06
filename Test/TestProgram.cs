@@ -22,9 +22,12 @@ namespace Test
 
             Paragraph paragraphs = stage.Execute(fragment) as Paragraph;
 
+            SentenceSplittingStage x = new SentenceSplittingStage();
+            Sentence sentences = x.Execute(paragraphs) as Sentence;
+
             FileStream fileStream = File.OpenWrite("test.txt");
 
-            foreach(var p in paragraphs.Paragraphs)
+            foreach(var p in sentences.Sentences)
             {
                 byte[] textInBytes = Encoding.UTF8.GetBytes(p + "\n");
                 fileStream.Write(textInBytes, 0, textInBytes.Length);

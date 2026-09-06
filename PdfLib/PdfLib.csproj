@@ -103,6 +103,7 @@
     <Compile Include="NerLeaveSlip.Export.cs" />
     <Compile Include="Ner\Entities\LineFragment.cs" />
     <Compile Include="Ner\Entities\Paragraph.cs" />
+    <Compile Include="Ner\Entities\Sentence.cs" />
     <Compile Include="Ner\Rule.cs" />
     <Compile Include="Ner\RuleEngine.cs" />
     <Compile Include="Ner\RuleEngineStage.cs" />

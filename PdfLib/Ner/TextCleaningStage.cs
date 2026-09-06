@@ -52,9 +52,9 @@ namespace PdfLib
 
         public override BaseEntity Execute(BaseEntity input)
         {
-            LineFragment textFragment = input as LineFragment;
+            LineFragment lineFragment = input as LineFragment;
             
-            if (textFragment == null)
+            if (lineFragment == null)
             {
                 throw new ArgumentException("Input must be of type LineFragment", nameof(input));
             }
@@ -65,9 +65,9 @@ namespace PdfLib
 
             int i = 0;
             bool isNewParagraph = true;
-            while (i < textFragment.Lines.Length)
+            while (i < lineFragment.Lines.Length)
             {
-                string line = textFragment.Lines[i].Trim();
+                string line = lineFragment.Lines[i].Trim();
                 i++;
                 
                 if (line.Length == 0)
