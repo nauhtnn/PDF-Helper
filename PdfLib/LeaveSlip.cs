@@ -68,6 +68,7 @@ namespace PdfLib
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("Giấy nghỉ phép:");
             sb.AppendLine("Số: " + RegNumber);
+            sb.AppendLine("Ngày ban hành: " + PublishedDate);
             sb.AppendLine("Ngày nộp đơn: " + CommittingDate);
             sb.AppendLine("Ngày bắt đầu nghỉ: " + StartLeaveDate);
             sb.AppendLine("Ngày kết thúc nghỉ: " + EndLeaveDate);
