@@ -87,13 +87,13 @@ namespace PdfLib
 
         public string GenerateFile(string fileName, string directory, string postfix = "")
         {
-            string newFilePath = Path.Combine(directory, fileName);
+            string baseFileName = Path.GetFileNameWithoutExtension(fileName);
+            string extension = Path.GetExtension(fileName);
+
+            string newFilePath = Path.Combine(directory, baseFileName + postfix + extension);
 
             if (!File.Exists(newFilePath))
                 return newFilePath;
-
-            string baseFileName = Path.GetFileNameWithoutExtension(fileName);
-            string extension = Path.GetExtension(fileName);
 
             for (int i = 0; i < int.MaxValue; ++i)
             {

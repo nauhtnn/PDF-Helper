@@ -51,9 +51,22 @@ namespace PdfLib
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
+            sb.AppendLine("Loại văn bản: " + GetDocTypes());
+            sb.AppendLine("Số: " + RegNumber);
+            sb.AppendLine("Ngày ban hành: " + PublishedDate);
+            sb.AppendLine("Ngày nộp đơn: " + CommittingDate);
+            sb.AppendLine("Ngày bắt đầu nghỉ: " + StartLeaveDate);
+            sb.AppendLine("Ngày kết thúc nghỉ: " + EndLeaveDate);
+            sb.AppendLine("Số ngày nghỉ: " + NumberOfLeaveDays);
+            sb.AppendLine("Tên người xin nghỉ phép: " + EmployeeName);
+            sb.AppendLine("Chữ ký lãnh đạo: " + BossName);
+            return sb.ToString();
+        }
+
+        public string GetDocTypes()
+        {
             StringBuilder docTypes = new StringBuilder();
-            docTypes.Append("Loại văn bản: ");
-            if(DocTypes.Count > 0)
+            if (DocTypes.Count > 0)
             {
                 for (int i = 0; i < DocTypes.Count; i++)
                 {
@@ -68,17 +81,8 @@ namespace PdfLib
             {
                 docTypes.Append("Không xác định");
             }
-            sb.AppendLine(docTypes.ToString());
-            sb.AppendLine("Số: " + RegNumber);
-            sb.AppendLine("Ngày ban hành: " + PublishedDate);
-            sb.AppendLine("Ngày nộp đơn: " + CommittingDate);
-            sb.AppendLine("Ngày bắt đầu nghỉ: " + StartLeaveDate);
-            sb.AppendLine("Ngày kết thúc nghỉ: " + EndLeaveDate);
-            sb.AppendLine("Số ngày nghỉ: " + NumberOfLeaveDays);
-            sb.AppendLine("Các ngày khác: " + string.Join(", ", UndefinedDates));
-            sb.AppendLine("Tên người xin nghỉ phép: " + EmployeeName);
-            sb.AppendLine("Chữ ký lãnh đạo: " + BossName);
-            return sb.ToString();
+
+            return docTypes.ToString();
         }
     }
 }

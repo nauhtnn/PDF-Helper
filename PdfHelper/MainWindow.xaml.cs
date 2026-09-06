@@ -226,7 +226,7 @@ namespace PdfHelper
                         }
 
                         NerLeaveSlip.Instance.ExportToXlsx(exportFilePath);
-                        StatusMessage.Instance.AddMessage($"Xuất dữ liệu giấy nghỉ phép ra file Excel: {exportFilePath}");
+                        StatusMessage.Instance.AddMessage($"Đã xuất danh sách giấy nghỉ phép ra file Excel: {exportFilePath}.");
                     }
                 });
 

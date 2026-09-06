@@ -45,13 +45,14 @@ namespace PdfLib
             string[] headers = new[]
             {
                 "Loại văn bản",
+                "Số",
+                "Ngày ban hành",
                 "Ngày nộp đơn",
                 "Ngày bắt đầu nghỉ",
                 "Ngày kết thúc nghỉ",
-                "Các ngày khác",
                 "Số ngày nghỉ",
-                "Tên người",
-                "Đường dẫn File",
+                "Tên người xin nghỉ phép",
+                "Chữ ký lãnh đạo",
             };
 
             // Add header row
@@ -63,17 +64,22 @@ namespace PdfLib
             sheetData.Append(headerRow);
 
             // Add data rows
-            foreach (var kvp in LeaveSlips)
+            foreach (var doc in LeaveSlips.Documents)
             {
-                LeaveSlip slip = kvp.Value;
+                LeaveSlip slip = doc as LeaveSlip;
+
+                if (slip == null)
+                    continue;
+
                 Row row = new Row();
 
                 row.Append(
-                    CreateTextCell(DocumentTypeMapping.SentenceCase[DocumentType.LeaveSlip]),
+                    CreateTextCell(slip.GetDocTypes()),
+                    CreateTextCell(slip.RegNumber),
+                    CreateTextCell(slip.PublishedDate),
                     CreateTextCell(slip.CommittingDate),
                     CreateTextCell(slip.StartLeaveDate),
                     CreateTextCell(slip.EndLeaveDate),
-                    CreateTextCell(string.Join(", ", slip.UndefinedDates ?? new List<string>())),
                     CreateNumberCell(slip.NumberOfLeaveDays),
                     CreateTextCell(slip.EmployeeName),
                     CreateTextCell(slip.BossName)

@@ -114,6 +114,7 @@ namespace PdfLib
             }
 
             StatusMessage.Instance.AddMessage($"Hoàn thành đọc file: {filePath}.");
+            StatusMessage.Instance.AddMessage($"Đã xuất kết quả ra file: {saveAllFilePath}.");
         }
     }
 }
