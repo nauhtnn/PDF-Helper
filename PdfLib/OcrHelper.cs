@@ -87,16 +87,13 @@ namespace PdfLib
             bool saveAllEnabled = textOfPages.Count > 0;
             if(saveAllEnabled)
             {
-                saveAllBaseName = Path.GetFileNameWithoutExtension(filePath) + ".txt";
-                saveAllFilePath = PathHelper.Instance.GenerateFile(saveAllBaseName, saveDirectory, "_OCR");
+                saveAllBaseName = Path.GetFileNameWithoutExtension(filePath) + "_OCR.txt";
+                saveAllFilePath = PathHelper.Instance.GenerateFile(saveAllBaseName, saveDirectory);
                 fileStream = File.OpenWrite(saveAllFilePath);
             }
 
             foreach (var fileContent in textOfPages)
             {
-                //var outputFilePath = PathHelper.Instance.GenerateFile(saveBaseName, saveDirectory, "_OCR");
-                //File.WriteAllText(outputFilePath, fileContent, System.Text.Encoding.UTF8);
-
                 if(saveAllEnabled)
                 {
                     // Write page index and file index (ALL IS UPPPERCASED) to the combined file
