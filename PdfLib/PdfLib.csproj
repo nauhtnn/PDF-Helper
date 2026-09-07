@@ -101,6 +101,7 @@
     <Compile Include="LeaveSlip.cs" />
     <Compile Include="NerLeaveSlip.cs" />
     <Compile Include="NerLeaveSlip.Export.cs" />
+    <Compile Include="Ner\CommonRegexPattern.cs" />
     <Compile Include="Ner\Entities\DocumentList.cs" />
     <Compile Include="Ner\Entities\StringPair.cs" />
     <Compile Include="Ner\Entities\LineFragment.cs" />

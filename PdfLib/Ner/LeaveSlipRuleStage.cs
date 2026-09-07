@@ -106,32 +106,74 @@ namespace PdfLib
                     return true;
                 }
             ));
+        }
 
-            Rules.Add(CreateRule(
-                "BossName",
-               @"^(?<name>(?:[A-ZÀ-Ỵ][a-zà-ỵ]+(?:\s+[A-ZÀ-Ỵ][a-zà-ỵ]+)*))$",
-                (match, slip) =>
+        void ParseBossName(LeaveSlip slip)
+        {
+            List<string> candidates = new List<string>();
+
+            foreach (string sentence in slip.TextBlock)
+            {
+                if (TextMeasurement.FuzzyStartsWith(sentence, "Nơi nhận:"))
                 {
-                    slip.BossName = match.Groups["name"].Value.Trim();
-                    return true;
+                    candidates.Clear();
+                    continue;
                 }
-            ));
+                    
+                Match match = Regex.Match(sentence, @"^(?<name>" +
+                    CommonRegexPattern.PascalCasePattern + ")$");
+                if (match.Success)
+                {
+                    candidates.Add(match.Groups["name"].Value.Trim());
+                    continue;
+                }
+            }
+
+            string longestName = candidates.OrderByDescending(name => name.Length).FirstOrDefault();
+            if (!string.IsNullOrEmpty(longestName))
+            {
+                slip.BossName = longestName;
+            }
         }
 
         void ParseEmployeeName(LeaveSlip slip)
         {
-            string MrOrMsPattern = @"([Ôô]ng|[Bb]à|[Ôô]ng\s*[/\(,]\s*[Bb]à)";
             List<string> candidates = new List<string>();
             foreach(string sentence in slip.TextBlock)
             {
-                Match match = Regex.Match(sentence, @"của\s+" + MrOrMsPattern + @"\s+(?<name>(?:[A-ZÀ-Ỵ][a-zà-ỵ]+(?:\s+[A-ZÀ-Ỵ][a-zà-ỵ]+)*))");
+                Match match = Regex.Match(sentence, @"của\s+" +
+                    CommonRegexPattern.CorePersonNamePrefixPattern +
+                    @"\s+(?<name>(" + CommonRegexPattern.PascalCasePattern + "))");
                 if (match.Success)
                 {
                     candidates.Add(match.Groups["name"].Value.Trim());
                     continue;
                 }
 
-                match = Regex.Match(sentence, @"\W?\s*" + MrOrMsPattern + @"\s*:\s *(?<name>(?:[A-ZÀ-Ỵ][a-zà-ỵ]+(?:\s+[A-ZÀ-Ỵ][a-zà-ỵ]+)*))");
+                match = Regex.Match(sentence,
+                    CommonRegexPattern.LaxPersonNamePrefixPattern +
+                    @"\s*(?<name>(" + CommonRegexPattern.PascalCasePattern +
+                    @"))$");
+
+                if (match.Success)
+                {
+                    candidates.Add(match.Groups["name"].Value.Trim());
+                }
+
+                match = Regex.Match(sentence,
+                    CommonRegexPattern.LaxPersonNamePrefixPattern +
+                    @"\s*(?<name>(" + CommonRegexPattern.PascalCasePattern +
+                    @"))\s*[;:]");
+
+                if (match.Success)
+                {
+                    candidates.Add(match.Groups["name"].Value.Trim());
+                }
+
+                match = Regex.Match(sentence,
+                    CommonRegexPattern.StrictPersonNamePrefixPattern +
+                    @"\s*(?<name>(" + CommonRegexPattern.PascalCasePattern +
+                    @"|" + CommonRegexPattern.UppercaseWordsPattern + @"))");
 
                 if (match.Success)
                 {
@@ -179,6 +221,8 @@ namespace PdfLib
                 }
 
                 ParseEmployeeName(leaveSlip);
+
+                ParseBossName(leaveSlip);
 
                 leaveSlips.Documents.Add(leaveSlip);
             }
