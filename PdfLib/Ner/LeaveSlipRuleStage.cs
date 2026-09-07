@@ -108,16 +108,6 @@ namespace PdfLib
             ));
 
             Rules.Add(CreateRule(
-                "EmployeeName",
-                @"của\s*([Ôô]ng|[Bb]à)\s*(?<name>(?:[A-ZÀ-Ỵ][a-zà-ỵ]+(?:\s+[A-ZÀ-Ỵ][a-zà-ỵ]+)*))",
-                (match, slip) =>
-                {
-                    slip.EmployeeName = match.Groups["name"].Value.Trim();
-                    return true;
-                }
-            ));
-
-            Rules.Add(CreateRule(
                 "BossName",
                @"^(?<name>(?:[A-ZÀ-Ỵ][a-zà-ỵ]+(?:\s+[A-ZÀ-Ỵ][a-zà-ỵ]+)*))$",
                 (match, slip) =>
@@ -126,6 +116,42 @@ namespace PdfLib
                     return true;
                 }
             ));
+        }
+
+        void ParseEmployeeName(LeaveSlip slip)
+        {
+            string MrOrMsPattern = @"([Ôô]ng|[Bb]à|[Ôô]ng\s*[/\(,]\s*[Bb]à)";
+            List<string> candidates = new List<string>();
+            foreach(string sentence in slip.TextBlock)
+            {
+                Match match = Regex.Match(sentence, @"của\s+" + MrOrMsPattern + @"\s+(?<name>(?:[A-ZÀ-Ỵ][a-zà-ỵ]+(?:\s+[A-ZÀ-Ỵ][a-zà-ỵ]+)*))");
+                if (match.Success)
+                {
+                    candidates.Add(match.Groups["name"].Value.Trim());
+                    continue;
+                }
+
+                match = Regex.Match(sentence, @"\W?\s*" + MrOrMsPattern + @"\s*:\s *(?<name>(?:[A-ZÀ-Ỵ][a-zà-ỵ]+(?:\s+[A-ZÀ-Ỵ][a-zà-ỵ]+)*))");
+
+                if (match.Success)
+                {
+                    candidates.Add(match.Groups["name"].Value.Trim());
+                }
+            }
+
+            if(candidates.Count > 0)
+            {
+                List<string> noDuplicated = new List<string>();
+                foreach (string name in candidates)
+                {
+                    if (!noDuplicated.Contains(name))
+                    {
+                        noDuplicated.Add(name);
+                    }
+                }
+                
+                slip.EmployeeName = string.Join(", ", noDuplicated);
+            }
         }
 
         public override BaseEntity Execute(BaseEntity input)
@@ -151,7 +177,9 @@ namespace PdfLib
                         rule.Apply(leaveSlip);
                     }
                 }
-                
+
+                ParseEmployeeName(leaveSlip);
+
                 leaveSlips.Documents.Add(leaveSlip);
             }
 

@@ -177,6 +177,18 @@ namespace PdfLib
                     continue;
                 }
 
+                if(LastCheckIsNewLine(line, pages.Last().Paragraphs.LastOrDefault() ?? ""))
+                {
+                    if (paragraph.Length > 0)
+                    {
+                        pages.Last().Paragraphs.Add(paragraph.ToString());
+                        paragraph.Clear();
+                    }
+                    pages.Last().Paragraphs.Add(line);
+                    isNewParagraph = true;
+                    continue;
+                }
+
                 //no indicators for new paragraph, append to current paragraph
 
                 if (!isNewParagraph)
@@ -216,6 +228,23 @@ namespace PdfLib
                 documents.Add(lastDoc);
 
             return new DocumentList(documents);
+        }
+
+        //this is the last check for new line, after all other checks have failed
+        bool LastCheckIsNewLine(string currentLine, string previousLine)
+        {
+            // If the current line is significantly shorter than the previous line, it might be a new line.
+            if (currentLine.Length < previousLine.Length / 2)
+                return true;
+
+            string fuzzyCurrent = TextMeasurement.RemoveAccent(currentLine).ToUpper();
+            string fuzzyPrevious = TextMeasurement.RemoveAccent(previousLine).ToUpper();
+
+            if (Regex.IsMatch(fuzzyPrevious, @"\W?\s*(ONG)?\s*/?\(?(BA)?\)?\s*:") &&
+                Regex.IsMatch(fuzzyCurrent, @"\W?\s*CHUC\s*VU\s*:"))
+                return true;
+
+            return false;
         }
     }
 }
