@@ -117,6 +117,11 @@ namespace PdfLib
 
                 //indicators for new paragraph
                 DocumentType docType = DocumentTypeMapping.ParseUpperDocumentTypeLine(line);
+                /*if(docType == DocumentType.Unknown)
+                {
+                    docType = DocumentTypeMapping.FuzzyParseDocumentTypeLine(line);
+                }*/
+
                 if (docType != DocumentType.Unknown)
                 {
                     hasDocumentTitle = true;
@@ -242,6 +247,10 @@ namespace PdfLib
 
             if (Regex.IsMatch(fuzzyPrevious, @"\W?\s*(ONG)?\s*/?\(?(BA)?\)?\s*:") &&
                 Regex.IsMatch(fuzzyCurrent, @"\W?\s*CHUC\s*VU\s*:"))
+                return true;
+
+            if (Regex.IsMatch(fuzzyPrevious, @"thang[^A-ZÀ-Ỵa-zà-ỵ]+nam\s*$") &&
+                Regex.IsMatch(fuzzyCurrent, @"^\d{4}"))
                 return true;
 
             return false;

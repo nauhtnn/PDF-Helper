@@ -48,26 +48,6 @@ namespace PdfLib
             Rules.Clear();
 
             Rules.Add(CreateRule(
-                "RegNumber",
-                @"Số:\s*(\d+\s*[^A-Za-z0-9\s]*\s*[\p{Lu}]+\s*-\s*[\p{Lu}]+)",
-                (match, slip) =>
-                {
-                    slip.RegNumber = Regex.Replace(match.Groups[1].Value, @"\s+", "");
-                    return true;
-                }
-            ));
-
-            Rules.Add(CreateRule(
-                "PublishedDate",
-                @"ngày\s*(?<day>\d+)\s*tháng\s*(?<month>\d+)\s*năm\s*(?<year>\d+)",
-                (match, slip) =>
-                {
-                    slip.PublishedDate = $"{match.Groups["day"].Value}/{match.Groups["month"].Value}/{match.Groups["year"].Value}";
-                    return true;
-                }
-            ));
-
-            Rules.Add(CreateRule(
                 "CommittingDate",
                 @"ngày\s*(\d+/\d+/\d+)\s*của",
                 (match, slip) =>
@@ -108,6 +88,34 @@ namespace PdfLib
             ));
         }
 
+        void ParseRegNumber(LeaveSlip slip)
+        {
+            foreach (string sentence in slip.TextBlock)
+            {
+
+                Match match = Regex.Match(sentence, @"S[ốó]([\p{Lu}]+GNP-TNI)");
+                if (match.Success)
+                {
+                    slip.RegNumber = Regex.Replace(match.Groups[1].Value, @"\s+", "");
+                    return;
+                }
+
+                match = Regex.Match(sentence, @"Số:\s*(\d+\s*[^A-Za-z0-9\s]*\s*[\p{Lu}]+\s*-\s*[\p{Lu}]+)");
+                if (match.Success)
+                {
+                    slip.RegNumber = Regex.Replace(match.Groups[1].Value, @"\s+", "");
+                    return;
+                }
+
+                match = Regex.Match(sentence, @"S[ốó]([\p{Lu}]+Q[ĐD]-TNI)");
+                if (match.Success)
+                {
+                    slip.RegNumber = Regex.Replace(match.Groups[1].Value, @"\s+", "");
+                    return;
+                }
+            }
+        }
+
         void ParseBossName(LeaveSlip slip)
         {
             List<string> candidates = new List<string>();
@@ -136,6 +144,76 @@ namespace PdfLib
             }
         }
 
+        void ParsePublishedDate(LeaveSlip slip)
+        {
+            foreach (string sentence in slip.TextBlock)
+            {
+                Match match = Regex.Match(sentence, @"ngày(?<day>[^A-ZÀ-Ỵa-zà-ỵ]+)tháng(?<month>[^A-ZÀ-Ỵa-zà-ỵ]+)năm(?<year>[^A-ZÀ-Ỵa-zà-ỵ]+)");
+                if (match.Success)
+                {
+                    slip.PublishedDate = $"{match.Groups["day"].Value}/{match.Groups["month"].Value}/{match.Groups["year"].Value}";
+                    return;
+                }
+            }
+        }
+
+        // This method is for documents that are not recognized as leave slips
+        string ParseAllDatesNotPublishedDate(LeaveSlip slip)
+        {
+            List<string> dates = new List<string>();
+            foreach (string sentence in slip.TextBlock)
+            {
+                MatchCollection matches =
+                    Regex.Matches(sentence, @"(?<day>\d{1,2})\s*/\s*(?<month>\d{1,2})\s*/\s*(?<year>\d{4})");
+                foreach (Match match in matches)
+                {
+                    dates.Add($"{match.Groups["day"].Value}/{match.Groups["month"].Value}/{match.Groups["year"].Value}");
+                }
+            }
+
+            return string.Join(", ", dates);
+        }
+
+        // This method is for documents that are not recognized as leave slips
+        string ParseAllNames(LeaveSlip slip)
+        {
+            List<string> candidates = new List<string>();
+            foreach (string sentence in slip.TextBlock)
+            {
+                List<string> names = GetAllMatches(sentence, @"của\s+" +
+                    CommonRegexPattern.CorePersonNamePrefixPattern +
+                    @"\s+(?<name>(" + CommonRegexPattern.PascalCasePattern + "))",
+                    "name");
+
+                candidates.AddRange(names);
+
+                names = GetAllMatches(sentence,
+                    CommonRegexPattern.LaxPersonNamePrefixPattern +
+                    @"\s*(?<name>(" + CommonRegexPattern.PascalCasePattern +
+                    @"))$", "name");
+
+                candidates.AddRange(names);
+
+                names = GetAllMatches(sentence,
+                    CommonRegexPattern.LaxPersonNamePrefixPattern +
+                    @"\s*(?<name>(" + CommonRegexPattern.PascalCasePattern +
+                    @"))\s*[;:]",
+                    "name");
+
+                candidates.AddRange(names);
+
+                names = GetAllMatches(sentence,
+                    CommonRegexPattern.StrictPersonNamePrefixPattern +
+                    @"\s*(?<name>(" + CommonRegexPattern.PascalCasePattern +
+                    @"|" + CommonRegexPattern.UppercaseWordsPattern + @"))",
+                    "name");
+
+                candidates.AddRange(names);
+            }
+
+            return string.Join(", ", candidates);
+        }
+
         void ParseEmployeeName(LeaveSlip slip)
         {
             List<string> candidates = new List<string>();
@@ -147,7 +225,6 @@ namespace PdfLib
                 if (match.Success)
                 {
                     candidates.Add(match.Groups["name"].Value.Trim());
-                    continue;
                 }
 
                 match = Regex.Match(sentence,
@@ -196,6 +273,17 @@ namespace PdfLib
             }
         }
 
+        List<string> GetAllMatches(string sentence, string pattern, string groupName)
+        {
+            MatchCollection matches = Regex.Matches(sentence, pattern);
+            List<string> results = new List<string>();
+            foreach (Match match in matches)
+            {
+                results.Add(match.Groups[groupName].Value.Trim());
+            }
+            return results;
+        }
+
         public override BaseEntity Execute(BaseEntity input)
         {
             DocumentList documents = input as DocumentList;
@@ -211,18 +299,29 @@ namespace PdfLib
             {
                 LeaveSlip leaveSlip = new LeaveSlip(document);
 
-                if(leaveSlip.DocTypes.Count == 1 &&
+                ParseRegNumber(leaveSlip);
+
+                ParsePublishedDate(leaveSlip);
+
+                if (leaveSlip.DocTypes.Count == 1 &&
                     leaveSlip.DocTypes[0] == DocumentType.LeaveSlip)
                 {
                     foreach (var rule in Rules)
                     {
                         rule.Apply(leaveSlip);
                     }
+
+                    ParseEmployeeName(leaveSlip);
+
+                    ParseBossName(leaveSlip);
                 }
-
-                ParseEmployeeName(leaveSlip);
-
-                ParseBossName(leaveSlip);
+                else
+                {
+                    leaveSlip.UndefinedDates = new List<string>();
+                    leaveSlip.UndefinedDates.Add(ParseAllDatesNotPublishedDate(leaveSlip));
+                    leaveSlip.CommittingDate = string.Join(", ", leaveSlip.UndefinedDates);
+                    leaveSlip.EmployeeName = ParseAllNames(leaveSlip);
+                }
 
                 leaveSlips.Documents.Add(leaveSlip);
             }

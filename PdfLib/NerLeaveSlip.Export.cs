@@ -51,7 +51,7 @@ namespace PdfLib
                 "Ngày bắt đầu nghỉ",
                 "Ngày kết thúc nghỉ",
                 "Số ngày nghỉ",
-                "Tên người xin nghỉ phép",
+                "Tên đối tượng trực tiếp của văn bản",
                 "Chữ ký lãnh đạo",
             };
 
