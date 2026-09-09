@@ -11,11 +11,11 @@ namespace PdfLib
         public const string UppercaseWordsPattern =
             @"[A-ZÀ-Ỵ]+(\s+[A-ZÀ-Ỵ]+)*";
         public const string CorePersonNamePrefixPattern =
-            @"([Ôô]ng(\s*([/,]\s*[Bb]à|\([Bb]à\)))?|[Bb]à)";
+            @"([OÔ-Ộô-ộ]ng(\s*([/,]\s*[Bb][à-ạ]|\([Bb][à-ạ]\)))?|[Bb][à-ạ])";
         public const string LaxPersonNamePrefixPattern =
-            @"([Ôô]ng(\s*[/\(,]\s*[Bb]à\)?)?|[Bb]à)\s*:?";
+            @"([OÔ-Ộô-ộ]ng(\s*[/\(,]\s*[Bb][à-ạ]\)?)?|[Bb][à-ạ])\s*:?";
         public const string StrictPersonNamePrefixPattern =
-            @"\b([Tt]ên\s+)?[Tt]ôi(\s+[Tt]ên)?(\s+[Ll]à)?\s*:";
+            @"\b([Tt]ên\s+)?[Tt]ôi(\s+[Tt]ên)?(\s+[Ll][à-ạ])?\s*:";
         public const string PascalCasePattern =
             @"([A-ZÀ-Ỵ][a-zà-ỵ]+(\s+[A-ZÀ-Ỵ][a-zà-ỵ]+)*)";
     }

@@ -110,6 +110,8 @@ namespace PdfLib
                 fileStream.Close();
             }
 
+            engine.Dispose();
+
             StatusMessage.Instance.AddMessage($"Hoàn thành đọc file: {filePath}.");
             StatusMessage.Instance.AddMessage($"Đã xuất kết quả ra file: {saveAllFilePath}.");
         }
