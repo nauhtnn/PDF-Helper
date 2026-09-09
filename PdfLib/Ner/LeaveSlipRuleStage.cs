@@ -93,21 +93,21 @@ namespace PdfLib
             foreach (string sentence in slip.TextBlock)
             {
 
-                Match match = Regex.Match(sentence, @"S[ốó]([\p{Lu}]+GNP-TNI)");
+                Match match = Regex.Match(sentence, @"S[ốó]([\p{L}\s]{2,10}GNP-TNI)");
                 if (match.Success)
                 {
                     slip.RegNumber = Regex.Replace(match.Groups[1].Value, @"\s+", "");
                     return;
                 }
 
-                match = Regex.Match(sentence, @"Số:\s*(\d+\s*[^A-Za-z0-9\s]*\s*[\p{Lu}]+\s*-\s*[\p{Lu}]+)");
+                match = Regex.Match(sentence, @"Số:\s*(\d+[\p{L}\s]{5,10}-[\p{L}\s]{1,5})");
                 if (match.Success)
                 {
                     slip.RegNumber = Regex.Replace(match.Groups[1].Value, @"\s+", "");
                     return;
                 }
 
-                match = Regex.Match(sentence, @"S[ốó]([\p{Lu}]+Q[ĐD]-TNI)");
+                match = Regex.Match(sentence, @"S[ốó]([\p{Lu}\s]{5,15}Q[ĐD]-TNI)");
                 if (match.Success)
                 {
                     slip.RegNumber = Regex.Replace(match.Groups[1].Value, @"\s+", "");
@@ -148,10 +148,11 @@ namespace PdfLib
         {
             foreach (string sentence in slip.TextBlock)
             {
-                Match match = Regex.Match(sentence, @"ngày(?<day>[^A-ZÀ-Ỵa-zà-ỵ]+)tháng(?<month>[^A-ZÀ-Ỵa-zà-ỵ]+)năm(?<year>[^A-ZÀ-Ỵa-zà-ỵ]+)");
+                Match match = Regex.Match(sentence, @"ngày(?<day>[\p{L}\s]{1,6})tháng(?<month>[\p{L}\s]{1,6})năm(?<year>[\d\s]{1,6})");
                 if (match.Success)
                 {
-                    slip.PublishedDate = $"{match.Groups["day"].Value}/{match.Groups["month"].Value}/{match.Groups["year"].Value}";
+                    slip.PublishedDate = Regex.Replace($"{match.Groups["day"].Value}/{match.Groups["month"].Value}/{match.Groups["year"].Value}",
+                        @"\s+", "");
                     return;
                 }
             }
@@ -164,10 +165,11 @@ namespace PdfLib
             foreach (string sentence in slip.TextBlock)
             {
                 MatchCollection matches =
-                    Regex.Matches(sentence, @"(?<day>\d{1,2})\s*/\s*(?<month>\d{1,2})\s*/\s*(?<year>\d{4})");
+                    Regex.Matches(sentence, @"(?<day>[\p{L}\s]{1,4})/(?<month>[\p{L}\s]{1,4})/(?<year>[\d\s]{1,6})");
                 foreach (Match match in matches)
                 {
-                    dates.Add($"{match.Groups["day"].Value}/{match.Groups["month"].Value}/{match.Groups["year"].Value}");
+                    dates.Add(Regex.Replace($"{match.Groups["day"].Value.Trim()}/{match.Groups["month"].Value.Trim()}/{match.Groups["year"].Value.Trim()}",
+                        @"\s+", ""));
                 }
             }
 
