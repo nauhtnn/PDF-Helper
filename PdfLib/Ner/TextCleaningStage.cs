@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -182,7 +182,10 @@ namespace PdfLib
                     continue;
                 }
 
-                if(LastCheckIsNewLine(line, pages.Last().Paragraphs.LastOrDefault() ?? ""))
+                string previousText = (paragraph.Length > 0) ? paragraph.ToString() :
+                    (pages.Last().Paragraphs.LastOrDefault() ?? "");
+
+                if(LastCheckIsNewLine(line, previousText))
                 {
                     if (paragraph.Length > 0)
                     {
@@ -205,7 +208,12 @@ namespace PdfLib
 
                 //indicators for end of paragraph
                 //line ends with punctuation except for +, -, , ( , /, \
-                if (!Regex.IsMatch(line, @"[+\-,\(/\\]$") && Regex.IsMatch(line, @"[^\w\s]$"))
+                bool isEndOfLine = !Regex.IsMatch(line, @"[+\-,\(/\\]$") && Regex.IsMatch(line, @"[^\w\s]$");
+
+                // If the current line is significantly shorter than the previous line, it might be a new line.
+                isEndOfLine |= line.Length < previousText.Length / 2;
+
+                if (isEndOfLine)
                 {
                     pages.Last().Paragraphs.Add(paragraph.ToString());
                     paragraph.Clear();
@@ -238,19 +246,11 @@ namespace PdfLib
         //this is the last check for new line, after all other checks have failed
         bool LastCheckIsNewLine(string currentLine, string previousLine)
         {
-            // If the current line is significantly shorter than the previous line, it might be a new line.
-            if (currentLine.Length < previousLine.Length / 2)
-                return true;
-
             string fuzzyCurrent = TextMeasurement.RemoveAccent(currentLine).ToUpper();
             string fuzzyPrevious = TextMeasurement.RemoveAccent(previousLine).ToUpper();
 
             if (Regex.IsMatch(fuzzyPrevious, @"\W?\s*(ONG)?\s*/?\(?(BA)?\)?\s*:") &&
                 Regex.IsMatch(fuzzyCurrent, @"\W?\s*CHUC\s*VU\s*:"))
-                return true;
-
-            if (Regex.IsMatch(fuzzyPrevious, @"thang[^A-ZÀ-Ỵa-zà-ỵ]+nam\s*$") &&
-                Regex.IsMatch(fuzzyCurrent, @"^\d{4}"))
                 return true;
 
             return false;
