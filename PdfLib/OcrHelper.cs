@@ -73,7 +73,7 @@ namespace PdfLib
                     }
                 }
 
-                textOfPages.Add(pageText.ToString());
+                textOfPages.Add(Censorship.Instance.ScanAndReplace(pageText.ToString()));
 
                 StatusMessage.Instance.AddMessage($"Nhận dạng ký tự trang {++pageIndex}.");
             }
