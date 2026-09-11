@@ -170,6 +170,9 @@ namespace PdfHelper
 
             processor.StopRequested = false;
 
+            if (TaskCbb.SelectedItem == NERItem)
+                NerLeaveSlip.Instance.LeaveSlips.Documents.Clear();
+
             if (!string.IsNullOrEmpty(FolderPathTxb.Text))
             {
                 string folderPath = FolderPathTxb.Text;
@@ -202,8 +205,14 @@ namespace PdfHelper
                     if(TaskCbb.SelectedItem == NERItem)
                     {
                         string exportFilePath = null;
-                        Microsoft.Win32.SaveFileDialog saveResultDialog = new Microsoft.Win32.SaveFileDialog();
-                        saveResultDialog.Title = "Chọn file lưu kết quả";
+                        Microsoft.Win32.SaveFileDialog saveResultDialog = new Microsoft.Win32.SaveFileDialog()
+                        {
+                            Title = "Chọn file lưu kết quả",
+                            Filter = "Excel Workbook (*.xlsx)|*.xlsx|All files (*.*)|*.*",
+                            DefaultExt = "xlsx",
+                            AddExtension = true,
+                            OverwritePrompt = false // we handle overwrite manually
+                        };
 
                         if (saveResultDialog.ShowDialog() == true)
                         {
@@ -217,16 +226,33 @@ namespace PdfHelper
                             {
                                 tempIndex++;
                             }
-                            exportFilePath = System.IO.Path.GetTempPath() + $"LeaveSlip_Export_{tempIndex}.xlsx";
+                            exportFilePath = PathHelper.Instance.GenerateLocalFile($"LeaveSlip_Export_{tempIndex}.xlsx");
                         }
 
                         if(!exportFilePath.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
                         {
+                            System.Windows.MessageBox.Show($"PDF-Helper sẽ tự thêm phần mở rộng '.xlsx' cho file xuất.",
+                                       "Thông báo",
+                                       System.Windows.MessageBoxButton.OK,
+                                       System.Windows.MessageBoxImage.Warning);
                             exportFilePath += ".xlsx";
                         }
 
+                        if(File.Exists(exportFilePath))
+                        {
+                            string newExpFilePath = PathHelper.Instance.GenerateFile(
+                                System.IO.Path.GetFileName(exportFilePath),
+                                System.IO.Path.GetDirectoryName(exportFilePath));
+                            System.Windows.MessageBox.Show($"File {System.IO.Path.GetFileName(exportFilePath)} đã tồn tại.\n" +
+                                "Để an toàn, PDF-Helper sẽ lưu vào file mới là " + System.IO.Path.GetFileName(newExpFilePath) + ".",
+                                       "Thông báo",
+                                       System.Windows.MessageBoxButton.OK,
+                                       System.Windows.MessageBoxImage.Warning);
+                            exportFilePath = newExpFilePath;
+                        }
+
                         NerLeaveSlip.Instance.ExportToXlsx(exportFilePath);
-                        StatusMessage.Instance.AddMessage($"Đã xuất danh sách giấy nghỉ phép ra file Excel: {exportFilePath}.");
+                        StatusMessage.Instance.AddMessage($"Đã lưu danh sách giấy nghỉ phép ra file Excel: {exportFilePath}.");
                     }
                 });
 
