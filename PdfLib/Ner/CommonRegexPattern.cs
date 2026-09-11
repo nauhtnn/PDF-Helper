@@ -17,6 +17,6 @@ namespace PdfLib
         public const string StrictPersonNamePrefixPattern =
             @"\b([Tt]ên\s+)?[Tt]ôi(\s+[Tt]ên)?(\s+[Ll][à-ạ])?\s*:";
         public const string PascalCasePattern =
-            @"([A-ZÀ-Ỵ][a-zà-ỵ]+(\s+[A-ZÀ-Ỵ][a-zà-ỵ]+)*)";
+            @"(\p{Lu}\p{Ll}+(\s+\p{Lu}\p{Ll}+)*)";
     }
 }

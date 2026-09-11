@@ -132,8 +132,12 @@ namespace PdfLib
                     CommonRegexPattern.PascalCasePattern + ")$");
                 if (match.Success)
                 {
-                    candidates.Add(match.Groups["name"].Value.Trim());
-                    continue;
+                    string name = match.Groups["name"].Value.Trim();
+                    if (!Regex.IsMatch(name, "\\b(" + CommonRegexPattern.CorePersonNamePrefixPattern + ")\\b"))
+                    {
+                        candidates.Add(name);
+                        continue;
+                    }
                 }
             }
 
