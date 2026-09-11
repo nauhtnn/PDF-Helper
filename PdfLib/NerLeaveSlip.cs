@@ -41,15 +41,18 @@ namespace PdfLib
         {
             StatusMessage.Instance.AddMessage($"Bắt đầu các bước nhận dạng file: {filePath}.");
 
-            LeaveSlips = Cleaning(filePath);
+            var moreLeaveSlips = Cleaning(filePath);
 
-            SplitSentence(LeaveSlips, filePath);
+            SplitSentence(moreLeaveSlips, filePath);
 
-            LeaveSlips = ParseLeaveSlip(LeaveSlips, filePath);
+            moreLeaveSlips = ParseLeaveSlip(moreLeaveSlips, filePath);
+            LeaveSlips.Documents.AddRange(moreLeaveSlips.Documents);
         }
 
         void WriteStageDebug(string saveFilePath, DocumentList documents)
         {
+            if (!OcrSettings.GetInstance().IsGaussianBlurEnabled)
+                return;
             FileStream fileStream = File.OpenWrite(saveFilePath);
 
             int docIndex = 0;
@@ -82,7 +85,7 @@ namespace PdfLib
             DocumentList documents = stage.Execute(fragment) as DocumentList;
 
             string saveDirectory = Path.GetDirectoryName(filePath);
-            string saveBaseName = Path.GetFileNameWithoutExtension(filePath) + "_NER_cleaned.txt";
+            string saveBaseName = Path.GetFileNameWithoutExtension(filePath) + "_NER_1cleaned.temp";
             string saveFilePath = PathHelper.Instance.GenerateFile(saveBaseName, saveDirectory);
 
             WriteStageDebug(saveFilePath, documents);
@@ -100,7 +103,7 @@ namespace PdfLib
             stage.Execute(documents);
 
             string saveDirectory = Path.GetDirectoryName(filePath);
-            string saveBaseName = Path.GetFileNameWithoutExtension(filePath) + "_NER_sentences.txt";
+            string saveBaseName = Path.GetFileNameWithoutExtension(filePath) + "_NER_2sentences.temp";
             string saveFilePath = PathHelper.Instance.GenerateFile(saveBaseName, saveDirectory);
 
             WriteStageDebug(saveFilePath, documents);
@@ -117,25 +120,29 @@ namespace PdfLib
             leaveSlipRuleStage.ResetDefaults();
             DocumentList leaveSlips = leaveSlipRuleStage.Execute(documents) as DocumentList;
 
-            string saveDirectory = Path.GetDirectoryName(filePath);
-            string saveBaseName = Path.GetFileNameWithoutExtension(filePath) + "_NER_GNP.txt";
-            string saveFilePath = PathHelper.Instance.GenerateFile(saveBaseName, saveDirectory);
-
-            FileStream fileStream = File.OpenWrite(saveFilePath);
-
-            foreach (var d in leaveSlips.Documents)
+            if(OcrSettings.GetInstance().IsGaussianBlurEnabled)
             {
-                LeaveSlip leaveSlip = d as LeaveSlip;
-                string p = leaveSlip.ToString();
-                byte[] textInBytes = Encoding.UTF8.GetBytes(p + "\n");
-                fileStream.Write(textInBytes, 0, textInBytes.Length);
+                string saveDirectory = Path.GetDirectoryName(filePath);
+                string saveBaseName = Path.GetFileNameWithoutExtension(filePath) + "_NER_3GNP.temp";
+                string saveFilePath = PathHelper.Instance.GenerateFile(saveBaseName, saveDirectory);
+
+                FileStream fileStream = File.OpenWrite(saveFilePath);
+
+                foreach (var d in leaveSlips.Documents)
+                {
+                    LeaveSlip leaveSlip = d as LeaveSlip;
+                    string p = leaveSlip.ToString();
+                    byte[] textInBytes = Encoding.UTF8.GetBytes(p + "\n");
+                    fileStream.Write(textInBytes, 0, textInBytes.Length);
+                }
+
+                fileStream.Flush();
+                fileStream.Close();
+
+                StatusMessage.Instance.AddMessage($"Đã xuất danh sách giấy nghỉ phép ra file: {saveFilePath}.");
             }
 
-            fileStream.Flush();
-            fileStream.Close();
-
             StatusMessage.Instance.AddMessage($"Hoàn thành các bước nhận dạng file: {filePath}.");
-            StatusMessage.Instance.AddMessage($"Đã xuất danh sách giấy nghỉ phép ra file: {saveFilePath}.");
 
             return leaveSlips;
         }
