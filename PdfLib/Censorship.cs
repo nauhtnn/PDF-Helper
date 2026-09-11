@@ -15,51 +15,43 @@ namespace PdfLib
         {
             get {
                 if(_instance == null)
-                    _instance = new Censorship("BadWords.dat");
+                    _instance = new Censorship("BadWords.bin");
                 return _instance;
             }
         }
 
-        List<string> _badWords = new List<string>();
+        string _badWordsPattern = null;
+        const byte _key = 0xAA; // secret XOR key
 
         public Censorship() { }
 
         public Censorship(string filePath)
         {
-            if (string.IsNullOrEmpty(filePath))
+            if (string.IsNullOrEmpty(filePath) ||
+                !File.Exists(filePath))
                 return;
-            FileStream stream = File.OpenRead(filePath);
-            byte[] buffer = new byte[stream.Length];
-            stream.Read(buffer, 0, buffer.Length);
-            stream.Close();
-            int offset = 0;
-            while(offset < buffer.Length - 4)
+
+            byte[] buffer = File.ReadAllBytes(filePath);
+
+            if (buffer.Length > 0)
             {
-                int stringSize = BitConverter.ToInt32(buffer, offset);
-                offset += 4;
-                string badWord = Encoding.UTF8.GetString(buffer, offset, stringSize);
-                offset += stringSize;
-                _badWords.Add(badWord);
+                // Reverse bitwise obfuscation
+                for (int i = 0; i < buffer.Length; i++)
+                    buffer[i] ^= _key;
+
+                _badWordsPattern = Encoding.UTF8.GetString(buffer);
             }
         }
 
         public string ScanAndReplace(string text)
         {
-            if (_badWords.Count == 0)
-                return text;
-            
-            StringBuilder patternBuilder = new StringBuilder();
-            foreach (string word in _badWords)
-                patternBuilder.Append(word + "|");
-
-            if(patternBuilder.Length == 0)
+            if (string.IsNullOrEmpty(_badWordsPattern))
                 return text;
 
-            patternBuilder.Remove(patternBuilder.Length - 1, 1);
-
-            string patterns = patternBuilder.ToString();
-
-            return Regex.Replace(text, "\b(" + patterns + ")\b", " ");
+            /*string censored = Regex.Replace(text, _badWordsPattern, "***", RegexOptions.IgnoreCase);
+            censored = Regex.Replace(censored, @"\s{2,}", " ");
+            return censored.Trim();*/
+            return Regex.Replace(text, _badWordsPattern, "***", RegexOptions.IgnoreCase);
         }
     }
 }
